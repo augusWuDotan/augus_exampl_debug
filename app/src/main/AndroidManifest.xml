@@ -55,6 +55,7 @@
         <activity android:name=".PetDebugActivity"></activity>
         <activity android:name=".PermissionActivity"></activity>
         <activity android:name=".FaceBookDemoActivity"></activity>
+        <activity android:name=".DialogActivity"></activity>
     </application>
 
 </manifest>

@@ -6,7 +6,6 @@ import android.support.v7.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
 
-
     // store 2 //customer 17 //pet 5
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -15,11 +14,13 @@ public class MainActivity extends AppCompatActivity {
         //camplay
 //            startActivity(new Intent(this,CamplayDebugActivity.class));
         //Pet
-        startActivity(new Intent(this, PetDebugActivity.class));
+//        startActivity(new Intent(this, PetDebugActivity.class));
         //permission
 //        startActivity(new Intent(this, PermissionActivity.class));
         //fb
 //        startActivity(new Intent(this, FaceBookDemoActivity.class));
+        //progress
+                startActivity(new Intent(this, DialogActivity.class));
 
     }
 

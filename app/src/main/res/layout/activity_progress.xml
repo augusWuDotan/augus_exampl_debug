@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.wdtpr.augus.debugnetexample.MainActivity">
+
+    <Button
+        android:id="@+id/btn01"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:onClick="ProgressDialog"
+        android:text="Progressdialog"
+        android:textAllCaps="false"
+        tools:ignore="OnClick" />
+
+    <Button
+        android:id="@+id/btn02"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/btn01"
+        android:onClick="ListDialog"
+        android:text="Listdialog"
+        android:textAllCaps="false"
+        tools:ignore="OnClick" />
+
+    <Button
+        android:id="@+id/btn03"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/btn02"
+        android:onClick="basicDialog"
+        android:text="basicDialog"
+        android:textAllCaps="false"
+        tools:ignore="OnClick" />
+</RelativeLayout>
