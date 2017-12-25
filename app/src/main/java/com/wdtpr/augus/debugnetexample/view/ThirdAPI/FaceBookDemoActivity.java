@@ -1,4 +1,4 @@
-package com.wdtpr.augus.debugnetexample;
+package com.wdtpr.augus.debugnetexample.view.ThirdAPI;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -16,6 +16,7 @@ import com.facebook.Profile;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
+import com.wdtpr.augus.debugnetexample.R;
 import com.wdtpr.augus.debugnetexample.base.Utils.LogUtils;
 import com.wdtpr.augus.debugnetexample.base.Utils.fileUtils;
 import com.wdtpr.augus.debugnetexample.facebook.Model.bean.in.FBLoginProfile.LoginUser;

@@ -1,4 +1,4 @@
-package com.wdtpr.augus.debugnetexample;
+package com.wdtpr.augus.debugnetexample.view.DEMOAPI;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -88,6 +88,7 @@ import com.wdtpr.augus.debugnetexample.Pet.presenter.template.ITemplateContract;
 import com.wdtpr.augus.debugnetexample.Pet.presenter.template.TemplatePresenter;
 import com.wdtpr.augus.debugnetexample.Pet.presenter.user.IUserContract;
 import com.wdtpr.augus.debugnetexample.Pet.presenter.user.UserPresenter;
+import com.wdtpr.augus.debugnetexample.R;
 import com.wdtpr.augus.debugnetexample.base.Utils.LogUtils;
 import com.wdtpr.augus.debugnetexample.base.Utils.fileUtils;
 import com.wdtpr.augus.debugnetexample.base.network.progress.DownLoadProgressHandler;

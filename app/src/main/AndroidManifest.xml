@@ -51,11 +51,11 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".CamplayDebugActivity"></activity>
-        <activity android:name=".PetDebugActivity"></activity>
-        <activity android:name=".PermissionActivity"></activity>
-        <activity android:name=".FaceBookDemoActivity"></activity>
-        <activity android:name=".DialogActivity"></activity>
+        <activity android:name=".view.DEMOAPI.CamplayDebugActivity"></activity>
+        <activity android:name=".view.DEMOAPI.PetDebugActivity"></activity>
+        <activity android:name=".view.Action.PermissionActivity"></activity>
+        <activity android:name=".view.ThirdAPI.FaceBookDemoActivity"></activity>
+        <activity android:name=".view.UI.DialogActivity"></activity>
     </application>
 
 </manifest>

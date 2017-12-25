@@ -1,4 +1,4 @@
-package com.wdtpr.augus.debugnetexample;
+package com.wdtpr.augus.debugnetexample.view.UI;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -9,6 +9,7 @@ import android.view.View;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.GravityEnum;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.wdtpr.augus.debugnetexample.R;
 import com.wdtpr.augus.debugnetexample.base.Utils.LogUtils;
 
 public class DialogActivity extends AppCompatActivity {

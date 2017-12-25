@@ -1,7 +1,6 @@
-package com.wdtpr.augus.debugnetexample;
+package com.wdtpr.augus.debugnetexample.view.Action;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -11,7 +10,7 @@ import android.support.annotation.StringRes;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
-import com.wdtpr.augus.debugnetexample.base.Utils.ListUtils;
+import com.wdtpr.augus.debugnetexample.R;
 import com.wdtpr.augus.debugnetexample.base.Utils.LogUtils;
 
 import permissions.dispatcher.NeedsPermission;
@@ -33,7 +32,6 @@ public class PermissionActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         PermissionActivityPermissionsDispatcher.showCameraWithPermissionCheck(this);
     }
-
 
 
     @Override

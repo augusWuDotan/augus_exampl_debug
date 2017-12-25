@@ -7,6 +7,8 @@ import com.wdtpr.augus.debugnetexample.camplay.model.bean.in.ServerToken;
 import com.wdtpr.augus.debugnetexample.camplay.model.bean.in.bloger.Bloger;
 import com.wdtpr.augus.debugnetexample.camplay.model.bean.in.dynamic.GraffitiDynamic_;
 import com.wdtpr.augus.debugnetexample.camplay.model.bean.in.dynamic.GraffitiDynamic_ob;
+import com.wdtpr.augus.debugnetexample.camplay.model.bean.in.order.OrderCallBack;
+import com.wdtpr.augus.debugnetexample.camplay.model.bean.in.order.ProductOrderBean;
 import com.wdtpr.augus.debugnetexample.camplay.network.RetrofitHelper;
 
 import org.reactivestreams.Publisher;
@@ -95,6 +97,33 @@ public class DynamicModel extends BaseModel implements IDynamicModel {
                     @Override
                     public void onNext(GraffitiDynamic_ob graffitiDynamic_) {
                         Log.d("gamByActiveID b", graffitiDynamic_.toString());
+                    }
+
+                    @Override
+                    public void onError(Throwable t) {
+                        disposableManager.clear();
+                        Log.d("gamByActiveID e", t.getMessage());
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                })
+        );
+    }
+
+    @Override
+    public void AddOrder(String token,String AccessToken, ProductOrderBean bean) {
+        //
+        disposableManager.add(RetrofitHelper.instance().create().AddOrder(token, AccessToken, bean)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(new ResourceSubscriber<OrderCallBack>() {
+
+                    @Override
+                    public void onNext(OrderCallBack orderCallBack) {
+                        Log.d("OrderCallBack b", orderCallBack.toString());
                     }
 
                     @Override

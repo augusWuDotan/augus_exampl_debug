@@ -4,8 +4,11 @@ import com.wdtpr.augus.debugnetexample.camplay.model.bean.in.ServerToken;
 import com.wdtpr.augus.debugnetexample.camplay.model.bean.in.bloger.Bloger;
 import com.wdtpr.augus.debugnetexample.camplay.model.bean.in.dynamic.GraffitiDynamic_;
 import com.wdtpr.augus.debugnetexample.camplay.model.bean.in.dynamic.GraffitiDynamic_ob;
+import com.wdtpr.augus.debugnetexample.camplay.model.bean.in.order.OrderCallBack;
+import com.wdtpr.augus.debugnetexample.camplay.model.bean.in.order.ProductOrderBean;
 
 import io.reactivex.Flowable;
+import retrofit2.http.Body;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.Header;
@@ -299,10 +302,11 @@ public interface Api {
 //    @POST("/api/Product/GetProductClassList")
 //    Flowable<ProductTypeBean> GetProductClassList(@Header("server_token") String token, @Header("Access_Token") String accountToken);
 //
+
 //
-//    //product  新增訂單
-//    @POST("/api/Product/AddOrder")
-//    Flowable<OrderCallBack> AddOrder(@Header("server_token") String token, @Header("Access_Token") String accountToken, @Body ProductOrderBean bean);
+    //product  新增訂單
+    @POST("/api/Product/AddOrder")
+    Flowable<OrderCallBack> AddOrder(@Header("server_token") String token, @Header("Access_Token") String accountToken, @Body ProductOrderBean bean);
 //
 //    //order 訂單列表
 //    @FormUrlEncoded

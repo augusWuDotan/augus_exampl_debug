@@ -12,8 +12,15 @@ import java.io.ByteArrayOutputStream;
 
 public class BitmapUtils {
 
-
-
+    /**
+     * use path to get bitmap
+     * use BitmapFactory.Options change image type
+     *
+     * @param sourcePath
+     * @param reqWidth
+     * @param reqHeight
+     * @return
+     */
     public static String bitmapToBase64Str(String sourcePath, int reqWidth, int reqHeight) {
         // 照片編碼(Base64)字串格式
         BitmapFactory.Options options = new BitmapFactory.Options();
