@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.wdtpr.augus.debugnetexample.MainActivity">
+
+    <Button
+        android:id="@+id/IRS"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="IRS"
+        android:text="IRS"
+        tools:ignore="OnClick" />
+
+    <Button
+        android:id="@+id/MOVIE"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/IRS"
+        android:onClick="MOVIE"
+        android:text="MOVIE"
+        tools:ignore="OnClick" />
+
+    <Button
+        android:id="@+id/TEST"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/MOVIE"
+        android:onClick="TEST"
+        android:text="TEST"
+        tools:ignore="OnClick" />
+
+    <Button
+        android:id="@+id/RADAR"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/TEST"
+        android:onClick="RADAR"
+        android:text="RADAR"
+        tools:ignore="OnClick" />
+
+    <Button
+        android:id="@+id/SPEAK"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/RADAR"
+        android:onClick="SPEAK"
+        android:text="SPEAK"
+        tools:ignore="OnClick" />
+
+    <Button
+        android:id="@+id/GOLD"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/SPEAK"
+        android:onClick="GOLD"
+        android:text="GOLD"
+        tools:ignore="OnClick" />
+
+</RelativeLayout>

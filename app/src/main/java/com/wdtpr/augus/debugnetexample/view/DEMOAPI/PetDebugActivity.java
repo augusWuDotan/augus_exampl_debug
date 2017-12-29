@@ -218,28 +218,28 @@ public class PetDebugActivity extends AppCompatActivity {
 //        取 商家權限
 //        storePresenter.GetPermission("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjIsImlzcyI6Imh0dHBzOlwvXC9tb21vZGkuY29tLnR3XC9hcGlcL3VzZXJcL2xvZ2luIiwiaWF0IjoxNTEyMjIxOTkyLCJleHAiOjE1MjAxMTEyMTIsIm5iZiI6MTUxMjIyMTk5MiwianRpIjoiaFEzeVJ4WFZiWDVFSkFkdyJ9.W0MEs93XyQFW4013JSdux8Fqpl3J03Mx8bYLEnb0z3E", 2);
 //        修改商家權限
-//        outPermission permission = new outPermission();
-//        Permission.ResultObject.ProviderPermission providerPermission = new Permission.ResultObject.ProviderPermission();
-//        providerPermission.setAPP_GO_FEEDBACK(false);
-//        providerPermission.setAPP_QUESTION_ANSWER(false);
-//        providerPermission.setCARD_ACTION_DEDUCTION_POINT(false);
-//        providerPermission.setMEMBER_ACTION_CHECKOUT(false);
-//        providerPermission.setSNS_ACTION_CARDPUSH(false);
-//        Permission.ResultObject.AssistantPermission assistantPermission = new Permission.ResultObject.AssistantPermission();
-//        assistantPermission.setAPP_PRICE_LIST(false);
-//        assistantPermission.setAPP_QUESTION_ANSWER(false);
-//        assistantPermission.setAPP_GO_FEEDBACK(false);
-//        assistantPermission.setAPP_SET_STORE_SCHEDULE_TIME(false);
-//        assistantPermission.setAPP_UPDATE_BUSSINESS_INFO(false);
-//        assistantPermission.setBOARD_ACTION_SET_ADV(false);
-//        assistantPermission.setBOARD_ACTION_SET_ANN(false);
-//        assistantPermission.setBOARD_ACTION_SET_STORE(false);
-//        assistantPermission.setCARD_ACTION_OPEN(false);
-//        assistantPermission.setSNS_ACTION_MEMBERPUSH(false);
-//        assistantPermission.setSNS_ACTION_MEMBERSPUSH(false);
-//        permission.setProvider_permission(providerPermission);
-//        permission.setAssistant_permission(assistantPermission);
-//        storePresenter.PostPermission("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjIsImlzcyI6Imh0dHBzOlwvXC9tb21vZGkuY29tLnR3XC9hcGlcL3VzZXJcL2xvZ2luIiwiaWF0IjoxNTEyMjIxOTkyLCJleHAiOjE1MjAxMTEyMTIsIm5iZiI6MTUxMjIyMTk5MiwianRpIjoiaFEzeVJ4WFZiWDVFSkFkdyJ9.W0MEs93XyQFW4013JSdux8Fqpl3J03Mx8bYLEnb0z3E", 2,permission);
+        outPermission permission = new outPermission();
+        Permission.ResultObject.ProviderPermission providerPermission = new Permission.ResultObject.ProviderPermission();
+        providerPermission.setAPP_GO_FEEDBACK(false);
+        providerPermission.setAPP_QUESTION_ANSWER(false);
+        providerPermission.setCARD_ACTION_DEDUCTION_POINT(false);
+        providerPermission.setMEMBER_ACTION_CHECKOUT(false);
+        providerPermission.setSNS_ACTION_CARDPUSH(false);
+        Permission.ResultObject.AssistantPermission assistantPermission = new Permission.ResultObject.AssistantPermission();
+        assistantPermission.setAPP_PRICE_LIST(false);
+        assistantPermission.setAPP_QUESTION_ANSWER(false);
+        assistantPermission.setAPP_GO_FEEDBACK(false);
+        assistantPermission.setAPP_SET_STORE_SCHEDULE_TIME(false);
+        assistantPermission.setAPP_UPDATE_BUSSINESS_INFO(false);
+        assistantPermission.setBOARD_ACTION_SET_ADV(false);
+        assistantPermission.setBOARD_ACTION_SET_ANN(false);
+        assistantPermission.setBOARD_ACTION_SET_STORE(false);
+        assistantPermission.setCARD_ACTION_OPEN(false);
+        assistantPermission.setSNS_ACTION_MEMBERPUSH(false);
+        assistantPermission.setSNS_ACTION_MEMBERSPUSH(false);
+        permission.setProvider_permission(providerPermission);
+        permission.setAssistant_permission(assistantPermission);
+        storePresenter.PostPermission("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjIsImlzcyI6Imh0dHBzOlwvXC9tb21vZGkuY29tLnR3XC9hcGlcL3VzZXJcL2xvZ2luIiwiaWF0IjoxNTEyMjIxOTkyLCJleHAiOjE1MjAxMTEyMTIsIm5iZiI6MTUxMjIyMTk5MiwianRpIjoiaFEzeVJ4WFZiWDVFSkFkdyJ9.W0MEs93XyQFW4013JSdux8Fqpl3J03Mx8bYLEnb0z3E", 2,permission);
         //綁定顧客
 //        storePresenter.POSTStoreBindCustomer("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjIsImlzcyI6Imh0dHBzOlwvXC9tb21vZGkuY29tLnR3XC9hcGlcL3VzZXJcL2xvZ2luIiwiaWF0IjoxNTEyMjIxOTkyLCJleHAiOjE1MjAxMTEyMTIsIm5iZiI6MTUxMjIyMTk5MiwianRpIjoiaFEzeVJ4WFZiWDVFSkFkdyJ9.W0MEs93XyQFW4013JSdux8Fqpl3J03Mx8bYLEnb0z3E",
 //                2,"poop124113@gmail.com");

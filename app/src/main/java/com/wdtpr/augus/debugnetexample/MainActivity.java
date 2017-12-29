@@ -4,7 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
-import com.wdtpr.augus.debugnetexample.view.DEMOAPI.CamplayDebugActivity;
+import com.wdtpr.augus.debugnetexample.view.bj.BjActivity;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -14,7 +14,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         //camplay
-            startActivity(new Intent(this,CamplayDebugActivity.class));
+//            startActivity(new Intent(this,CamplayDebugActivity.class));
         //Pet
 //        startActivity(new Intent(this, PetDebugActivity.class));
         //permission
@@ -23,6 +23,8 @@ public class MainActivity extends AppCompatActivity {
 //        startActivity(new Intent(this, FaceBookDemoActivity.class));
         //progress
 //                startActivity(new Intent(this, DialogActivity.class));
+        //bj
+        startActivity(new Intent(this, BjActivity.class));
 
     }
 

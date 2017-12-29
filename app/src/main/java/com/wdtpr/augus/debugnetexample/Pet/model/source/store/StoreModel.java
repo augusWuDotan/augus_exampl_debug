@@ -16,6 +16,7 @@ import com.wdtpr.augus.debugnetexample.Pet.model.bean.out.outPermission;
 import com.wdtpr.augus.debugnetexample.Pet.network.RetrofitHelper_Pet;
 import com.wdtpr.augus.debugnetexample.base.BaseModel;
 import com.wdtpr.augus.debugnetexample.base.Utils.ErrorCodeUtils;
+import com.wdtpr.augus.debugnetexample.base.Utils.LogUtils;
 import com.wdtpr.augus.debugnetexample.base.Utils.StringUtils;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;

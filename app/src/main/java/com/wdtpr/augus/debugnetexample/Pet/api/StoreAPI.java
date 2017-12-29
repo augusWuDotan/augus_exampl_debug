@@ -59,7 +59,7 @@ public interface StoreAPI {
     Flowable<Result<Status>> POSTStoreAvatar(@Header("Authorization") String Authorization, @Path("Store_Id") int Store_Id, @Part MultipartBody.Part avatar);
 
     //permission //取得權限
-    @GET("/api/store/{Store_Id}/permission")
+    @GET("api/store/{Store_Id}/permission")
     Flowable<Result<Permission>> GETPermission(@Header("Authorization") String Authorization, @Path("Store_Id") int Store_Id);
 
     //permission //修改權限

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <!--Bj profile form-->
+    <color name="profile_form_back_one">#F08300</color>
+    <color name="profile_form_dotted_line">#964F00</color>
+    <color name="profile_form_back_two">#FDE0A5</color>
+
+    <!--BJ profile radar-->
+    <color name="profile_radar_title">#ffff00</color>
+    <color name="profile_project_title">#5b1077</color>
+</resources>

@@ -3,4 +3,11 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+
+    <!--Bj-->
+    <color name="profile_form_back_one">#F08300</color>
+    <color name="profile_form_dotted_line">#964F00</color>
+    <color name="profile_form_back_two">#FDE0A5</color>
+
+
 </resources>

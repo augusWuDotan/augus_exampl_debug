@@ -25,8 +25,10 @@
     <string name="permission_camera_never_ask_again">Camera permission was denied with never ask again.</string>
 
 
-
     <!--fb 專案 id-->
     <string name="facebook_app_id" translatable="false">157244005004285</string>
     <string name="fb_login_protocol_scheme" translatable="false">fb157244005004285</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
