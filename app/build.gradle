@@ -65,4 +65,5 @@ dependencies {
     //圖示下載
     compile 'com.github.bumptech.glide:glide:3.8.0'
     implementation project(':bjprofile')
+    implementation project(':spellkeyboard')
 }

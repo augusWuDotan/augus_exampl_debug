@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
+import com.wdtpr.augus.debugnetexample.view.DEMOAPI.PetDebugActivity;
 import com.wdtpr.augus.debugnetexample.view.bj.BjActivity;
 
 public class MainActivity extends AppCompatActivity {

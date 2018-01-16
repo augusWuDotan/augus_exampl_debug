@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/bjprofile/bjprofile.iml" filepath="$PROJECT_DIR$/bjprofile/bjprofile.iml" />
       <module fileurl="file://$PROJECT_DIR$/example.iml" filepath="$PROJECT_DIR$/example.iml" />
+      <module fileurl="file://$PROJECT_DIR$/spellkeyboard/spellkeyboard.iml" filepath="$PROJECT_DIR$/spellkeyboard/spellkeyboard.iml" />
     </modules>
   </component>
 </project>

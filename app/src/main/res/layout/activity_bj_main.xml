@@ -12,6 +12,7 @@
         android:layout_height="wrap_content"
         android:onClick="IRS"
         android:text="IRS"
+        android:visibility="gone"
         tools:ignore="OnClick" />
 
     <Button
@@ -21,6 +22,7 @@
         android:layout_below="@+id/IRS"
         android:onClick="MOVIE"
         android:text="MOVIE"
+        android:visibility="gone"
         tools:ignore="OnClick" />
 
     <Button
@@ -30,6 +32,7 @@
         android:layout_below="@+id/MOVIE"
         android:onClick="TEST"
         android:text="TEST"
+        android:visibility="gone"
         tools:ignore="OnClick" />
 
     <Button
@@ -39,6 +42,7 @@
         android:layout_below="@+id/TEST"
         android:onClick="RADAR"
         android:text="RADAR"
+        android:visibility="gone"
         tools:ignore="OnClick" />
 
     <Button
@@ -48,6 +52,7 @@
         android:layout_below="@+id/RADAR"
         android:onClick="SPEAK"
         android:text="SPEAK"
+        android:visibility="gone"
         tools:ignore="OnClick" />
 
     <Button
@@ -57,6 +62,33 @@
         android:layout_below="@+id/SPEAK"
         android:onClick="GOLD"
         android:text="GOLD"
+        android:visibility="gone"
         tools:ignore="OnClick" />
+
+    <com.wdtpr.augus.spellkeyboard.widget.SpellKeyBoard
+        android:id="@+id/mSpellKeyBoard"
+        android:layout_width="match_parent"
+        android:layout_height="700px"
+        android:layout_alignParentTop="true"
+        app:KeyboardItemBackOne="@drawable/keyboard_back_normal"
+        app:KeyboardItemBackTwo="@drawable/keyboard_back_press"
+        app:KeyboardItemPadding="10px"
+        app:fillGridPaddingRL="2px"
+        app:normalFillGridItem="@drawable/fillgrid_type1"
+        app:normalKeyboardItem="@drawable/keyboard_normal"
+        app:touchKeyboardItem="@drawable/keyboard_press" />
+
+    <com.wdtpr.augus.spellkeyboard.widget.SpellKeyBoard
+        android:id="@+id/mSpellKeyBoard1"
+        android:layout_width="match_parent"
+        android:layout_height="500px"
+        android:layout_below="@+id/mSpellKeyBoard"
+        app:KeyboardItemBackOne="@drawable/keyboard_back_normal"
+        app:KeyboardItemBackTwo="@drawable/keyboard_back_press"
+        app:KeyboardItemPadding="10px"
+        app:fillGridPaddingRL="2px"
+        app:normalFillGridItem="@drawable/fillgrid_type1"
+        app:normalKeyboardItem="@drawable/keyboard_normal"
+        app:touchKeyboardItem="@drawable/keyboard_press" />
 
 </RelativeLayout>

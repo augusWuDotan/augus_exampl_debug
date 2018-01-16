@@ -2,6 +2,7 @@ package com.wdtpr.augus.debugnetexample.view.bj;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
@@ -15,6 +16,7 @@ import com.wdtpr.augus.bjprofile.bjDemo.presenter.LearnRecord.ILearnRecordContra
 import com.wdtpr.augus.bjprofile.bjDemo.presenter.LearnRecord.LearnRecordPresenter;
 import com.wdtpr.augus.debugnetexample.R;
 import com.wdtpr.augus.debugnetexample.base.Utils.LogUtils;
+import com.wdtpr.augus.spellkeyboard.widget.SpellKeyBoard;
 
 import java.util.List;
 
@@ -27,6 +29,31 @@ public class BjActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bj_main);
+        //
+        final SpellKeyBoard mSpellKeyBoard = (SpellKeyBoard) findViewById(R.id.mSpellKeyBoard);
+        mSpellKeyBoard.setAnswer("I'm joe");
+        mSpellKeyBoard.setKeyBoardNum(18);
+
+        final SpellKeyBoard mSpellKeyBoard1 = (SpellKeyBoard) findViewById(R.id.mSpellKeyBoard1);
+        mSpellKeyBoard1.setAnswer("TEST");
+        mSpellKeyBoard1.setKeyBoardNum(12);
+
+        //mSpellKeyBoard1.setAnswer("money"); 設定答案
+        //mSpellKeyBoard1.setKeyBoardNum(12); 設定鍵盤數[size]
+        //mSpellKeyBoard1.updateKeyword(); 更新
+
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mSpellKeyBoard1.setAnswer("money");//設定答案
+                mSpellKeyBoard1.setKeyBoardNum(12);//設定鍵盤數[size]
+                mSpellKeyBoard1.updateKeyword();//更新
+            }
+        }, 3000);
+
+
+        //
         learnRecordPresenter = new LearnRecordPresenter(new ILearnRecordContract.LearnRecordIRSStateView() {
             @Override
             public void GETFail() {
@@ -80,7 +107,7 @@ public class BjActivity extends AppCompatActivity {
             }
         });
 
-        learnRecordPresenter.GetGoldRecord(18);
+//        learnRecordPresenter.GetGoldRecord(18);
     }
 
     public void IRS(View view) {

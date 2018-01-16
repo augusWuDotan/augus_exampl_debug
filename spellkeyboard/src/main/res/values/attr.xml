@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="SpellKeyBoard">
+
+        <!--鍵盤項目間距-->
+        <attr name="KeyboardItemPadding" format="dimension" />
+        <!--鍵盤的圖示 normal-->
+        <attr name="normalKeyboardItem" format="reference" />
+        <!--鍵盤的圖示 click-->
+        <attr name="touchKeyboardItem" format="reference" />
+
+        <!--鍵盤back的圖示 normal-->
+        <attr name="KeyboardItemBackOne" format="reference" />
+        <!--鍵盤back的圖示 click-->
+        <attr name="KeyboardItemBackTwo" format="reference" />
+
+        <!--顯示項目 左右間距-->
+        <attr name="fillGridPaddingRL" format="dimension" />
+        <!--鍵盤點擊的圖示-->
+        <attr name="normalFillGridItem" format="reference" />
+
+    </declare-styleable>
+
+</resources>

@@ -436,8 +436,8 @@ public class PetDebugActivity extends AppCompatActivity {
         if (requestCode == 1111 && resultCode == Activity.RESULT_OK && data != null) {
             //
             Log.d("image", data.getData().getPath());
-            MultipartBody.Part part = fileUtils.prepareFilePart(this, "image", data.getData());
-            templatePresenter.POSTUpdateTemplateImage("https://momodi.com.tw/api/store-template-id/5a3775242867e11108609493/component/0/content/0", storeToken, part);
+//            MultipartBody.Part part = fileUtils.prepareFilePart(this, "image", data.getData());
+//            templatePresenter.POSTUpdateTemplateImage("https://momodi.com.tw/api/store-template-id/5a3775242867e11108609493/component/0/content/0", storeToken, part);
         }
     }
 
