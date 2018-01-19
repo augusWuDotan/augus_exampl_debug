@@ -794,8 +794,6 @@ public class SpellKeyBoard extends View {
 
     }
 
-
-
     //view 被回收怎樣處理
     @Override
     protected void onDetachedFromWindow() {
@@ -813,6 +811,19 @@ public class SpellKeyBoard extends View {
     public void unsubscribe() {
         LogUtils.d("清除資訊");
         //
+        if(keyBoardModel != null){
+            keyBoardModel.unsubscribe();
+            keyBoardModel = null;
+        }
+        if(fillGridModel != null){
+            fillGridModel.unsubscribe();
+            fillGridModel = null;
+        }
+        if(workFilterModel != null){
+            workFilterModel.unsubscribe();
+            workFilterModel = null;
+        }
+        //
         if (mBitmap != null) {
 //            LogUtils.d("1");
             mBitmap.recycle();
@@ -828,7 +839,8 @@ public class SpellKeyBoard extends View {
 //            LogUtils.d("3");
             fillGridRect = null;
         }
-        //
+
+        //圖像
         if (KeyBoardItemNormal != null) {
 //            LogUtils.d("4");
             KeyBoardItemNormal.recycle();
@@ -875,6 +887,7 @@ public class SpellKeyBoard extends View {
             answerList.clear();
             answerList = null;
         }
+
 
     }
 
@@ -1721,8 +1734,6 @@ public class SpellKeyBoard extends View {
                 listener.answerCorrectAnimFinish();
                 isFinish = false;
             }
-
-
         }
     }
 
@@ -1873,6 +1884,8 @@ public class SpellKeyBoard extends View {
     public void updateKeyword() {
         //清空畫布
         mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+        mKeyBoardCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+        mFillGridCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
         //尚未有點擊需要退回的index [-1 = 沒有需要退回的index]
         KeyBoardItemPreviousIndex = -1;
         //下一個使用的 作答格子[紀錄] 歸0

@@ -19,6 +19,7 @@ import com.wdtpr.augus.spellkeyboard.model.listener.SpellKeyBoardListener;
 import com.wdtpr.augus.spellkeyboard.widget.SpellKeyBoard;
 
 import java.util.List;
+import java.util.Random;
 
 
 public class BjActivity extends AppCompatActivity implements SpellKeyBoardListener  {
@@ -32,7 +33,6 @@ public class BjActivity extends AppCompatActivity implements SpellKeyBoardListen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bj_main);
-
 
 
         //init
@@ -160,11 +160,6 @@ public class BjActivity extends AppCompatActivity implements SpellKeyBoardListen
     protected void onDestroy() {
         super.onDestroy();
         LogUtils.d("onDestroy");
-        /**
-         * 自主回收
-         */
-//        mSpellKeyBoard.unsubscribe();
-//        mSpellKeyBoard1.unsubscribe();
     }
 
 
@@ -213,9 +208,19 @@ public class BjActivity extends AppCompatActivity implements SpellKeyBoardListen
     @Override
     public void answerCorrectAnimFinish() {
         LogUtils.d("答題成功 刪除動畫執行結束");
-        mSpellKeyBoard.setAnswer("how");
-        mSpellKeyBoard.setKeyBoardNum(24);
-        mSpellKeyBoard.setmType(1);// 1:答案格藍底 2:答案格黃底
-        mSpellKeyBoard.updateKeyword();//呼叫重繪
+        Random r = new Random();
+        int index = r.nextInt(2);
+        if(index == 0){
+            mSpellKeyBoard.setAnswer("augus");
+            mSpellKeyBoard.setKeyBoardNum(12);
+            mSpellKeyBoard.setmType(2);// 1:答案格藍底 2:答案格黃底
+            mSpellKeyBoard.updateKeyword();//呼叫重繪
+        }else{
+            mSpellKeyBoard.setAnswer("how");
+            mSpellKeyBoard.setKeyBoardNum(24);
+            mSpellKeyBoard.setmType(1);// 1:答案格藍底 2:答案格黃底
+            mSpellKeyBoard.updateKeyword();//呼叫重繪
+        }
+
     }
 }
