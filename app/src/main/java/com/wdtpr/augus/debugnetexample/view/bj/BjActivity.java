@@ -2,7 +2,6 @@ package com.wdtpr.augus.debugnetexample.view.bj;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
@@ -23,34 +22,54 @@ import java.util.List;
 
 public class BjActivity extends AppCompatActivity {
 
+
     private LearnRecordPresenter learnRecordPresenter;
+
+    SpellKeyBoard mSpellKeyBoard;
+    SpellKeyBoard mSpellKeyBoard1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bj_main);
         //
-        final SpellKeyBoard mSpellKeyBoard = (SpellKeyBoard) findViewById(R.id.mSpellKeyBoard);
-        mSpellKeyBoard.setAnswer("I'm joe");
-        mSpellKeyBoard.setKeyBoardNum(18);
+        mSpellKeyBoard = (SpellKeyBoard) findViewById(R.id.mSpellKeyBoard);
+        mSpellKeyBoard.setAnswer("Shakespeare's Birthplace");
+//        mSpellKeyBoard.setAnswer("come on");
+        mSpellKeyBoard.setKeyBoardNum(24);
+//        mSpellKeyBoard.setKeyBoardNum(36);
+//        mSpellKeyBoard.setKeyBoardNum(40);
 
-        final SpellKeyBoard mSpellKeyBoard1 = (SpellKeyBoard) findViewById(R.id.mSpellKeyBoard1);
-        mSpellKeyBoard1.setAnswer("TEST");
-        mSpellKeyBoard1.setKeyBoardNum(12);
-
-        //mSpellKeyBoard1.setAnswer("money"); 設定答案
-        //mSpellKeyBoard1.setKeyBoardNum(12); 設定鍵盤數[size]
-        //mSpellKeyBoard1.updateKeyword(); 更新
-
-        Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
+        mSpellKeyBoard.listener = new SpellKeyBoard.SpellKeyBoardListener() {
             @Override
-            public void run() {
-                mSpellKeyBoard1.setAnswer("money");//設定答案
-                mSpellKeyBoard1.setKeyBoardNum(12);//設定鍵盤數[size]
-                mSpellKeyBoard1.updateKeyword();//更新
+            public void answerError(String ErrorStr) {
+                LogUtils.d("錯誤答案為："+ErrorStr);
             }
-        }, 3000);
+
+            @Override
+            public void answerCorrect(String CorrectStr) {
+                LogUtils.d("正確答案為："+CorrectStr);
+//                mSpellKeyBoard.setAnswer("money");//設定答案
+//                mSpellKeyBoard.setKeyBoardNum(24);//設定鍵盤數[size]
+//                mSpellKeyBoard.updateKeyword();//更新
+            }
+
+            @Override
+            public void alreadyEstablished() {
+                LogUtils.d("成功建立");
+            }
+
+            @Override
+            public void update() {
+                LogUtils.d("更新中");
+            }
+
+            @Override
+            public void updateError() {
+                LogUtils.d("更新錯誤");
+            }
+        };
+
 
 
         //
@@ -135,4 +154,20 @@ public class BjActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        LogUtils.d("onPause");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        LogUtils.d("onDestroy");
+        /**
+         * 自主回收
+         */
+//        mSpellKeyBoard.unsubscribe();
+//        mSpellKeyBoard1.unsubscribe();
+    }
 }

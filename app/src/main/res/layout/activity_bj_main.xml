@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context="com.wdtpr.augus.debugnetexample.MainActivity">
 
     <Button
@@ -68,27 +69,22 @@
     <com.wdtpr.augus.spellkeyboard.widget.SpellKeyBoard
         android:id="@+id/mSpellKeyBoard"
         android:layout_width="match_parent"
-        android:layout_height="700px"
-        android:layout_alignParentTop="true"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
         app:KeyboardItemBackOne="@drawable/keyboard_back_normal"
         app:KeyboardItemBackTwo="@drawable/keyboard_back_press"
-        app:KeyboardItemPadding="10px"
+        app:KeyboardItemPadding="15px"
         app:fillGridPaddingRL="2px"
-        app:normalFillGridItem="@drawable/fillgrid_type1"
+        app:normalFillGridItemType1="@drawable/fillgrid_type1"
+        app:normalFillGridItemType2="@drawable/fillgrid_type2"
         app:normalKeyboardItem="@drawable/keyboard_normal"
         app:touchKeyboardItem="@drawable/keyboard_press" />
 
-    <com.wdtpr.augus.spellkeyboard.widget.SpellKeyBoard
-        android:id="@+id/mSpellKeyBoard1"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="500px"
-        android:layout_below="@+id/mSpellKeyBoard"
-        app:KeyboardItemBackOne="@drawable/keyboard_back_normal"
-        app:KeyboardItemBackTwo="@drawable/keyboard_back_press"
-        app:KeyboardItemPadding="10px"
-        app:fillGridPaddingRL="2px"
-        app:normalFillGridItem="@drawable/fillgrid_type1"
-        app:normalKeyboardItem="@drawable/keyboard_normal"
-        app:touchKeyboardItem="@drawable/keyboard_press" />
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"/>
 
-</RelativeLayout>
+
+</LinearLayout>

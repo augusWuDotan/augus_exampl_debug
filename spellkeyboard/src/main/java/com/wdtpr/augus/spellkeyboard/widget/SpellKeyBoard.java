@@ -1,5 +1,8 @@
 package com.wdtpr.augus.spellkeyboard.widget;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
@@ -15,18 +18,24 @@ import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.AnticipateInterpolator;
+import android.view.animation.Interpolator;
+import android.view.animation.OvershootInterpolator;
 
 import com.wdtpr.augus.spellkeyboard.R;
-import com.wdtpr.augus.spellkeyboard.model.fillGrid;
-import com.wdtpr.augus.spellkeyboard.model.keyboard;
+import com.wdtpr.augus.spellkeyboard.model.bean.fillGrid;
+import com.wdtpr.augus.spellkeyboard.model.bean.keyboard;
+import com.wdtpr.augus.spellkeyboard.utils.BitmapUtils;
 import com.wdtpr.augus.spellkeyboard.utils.LogUtils;
+import com.wdtpr.augus.spellkeyboard.utils.TextUtils;
+import com.wdtpr.augus.spellkeyboard.utils.source.FillGridModel;
+import com.wdtpr.augus.spellkeyboard.utils.source.KeyBoardModel;
+import com.wdtpr.augus.spellkeyboard.utils.source.WorkFilterModel;
 
 import java.lang.ref.WeakReference;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
 /**
  * Created by augus on 2018/1/15.
@@ -44,28 +53,60 @@ public class SpellKeyBoard extends View {
     private Paint mTextPaint;
     private Paint mKeyboardPaint;
     private Paint mFillGridPaint;
+    private Paint mAnimPaint;
+    /**
+     * animatedValue 繪製完成度
+     * AccelerateDecelerateInterpolator 加速 - 減速
+     */
+    private int animTime = 500;//填寫答案動畫時間500毫秒
+    private int animClearTime = 700;//清除動畫時間 500毫秒
+    private int maxAnimCode = 1000;//最大值
+    private int minAnimCode = 0;//最小值
 
     /**
-     * 傳入版型 ["1","2"]
+     * 傳入版型 [1,2]
      */
-    private String version;
+    private int mType = 1;
     /**
      * 畫布底版
      */
-    private Canvas mCanvas;//母體
+    private Canvas mCanvas;//底圖畫布
+    private Bitmap mBitmap;//底圖圖片
+    private Canvas mKeyBoardCanvas;//鍵盤區畫布
+    private Bitmap mKeyBoardBitmap;//鍵盤區圖片
+    private Canvas mFillGridCanvas;//答題區畫布
+    private Bitmap mFillGridBitmap;//答題區圖片
 
-    private Bitmap mBitmap;//母體底圖
+    /**
+     * callback 回傳機制
+     */
+    public SpellKeyBoardListener listener;
+    /**
+     * 1.鍵盤模組
+     * 2.鍵盤內容建立模組
+     */
+    private KeyBoardModel keyBoardModel;
+    private WorkFilterModel workFilterModel;
+    private FillGridModel fillGridModel;
+
+
+    /**
+     * 答題 與 鍵盤區域比例
+     */
+    private float fillAreaPercentage = 0.4f;
+    private float keyboardAreaPercentage = 0.6f;
 
     /**
      * 字體
      */
     Typeface mfont;
+
     /**
-     * 佈局 全局高 全局寬
+     * 佈局 全局高 全局寬 全局margin(預設20)
      */
     private int SpellKeyBoardH;
-
     private int SpellKeyBoardW;
+
     /**
      * 傳入的答案
      */
@@ -81,37 +122,57 @@ public class SpellKeyBoard extends View {
     private int answerNonSpacelength;
 
     /**
+     * keyKoard rect 範圍
+     */
+    private Rect keyBoardRect;
+
+    /**
      * 鍵盤按鍵數量
      */
-    private int KeyBoardNum = 18;
+    private int KeyBoardNum = -1;
+    /**
+     * 鍵盤有幾層
+     */
+    private int KeyBoardLevelNum = -1;
     /**
      * 鍵盤每一層按鍵數量
      */
-    private int KeyBoardLevelNum;
+    private int KeyBoardLevelCount = -1;
     /**
      * 鍵盤按鍵區域 寬度
      */
-    private int KeyBoardW;
+    private int KeyBoardW = -1;
     /**
      * 鍵盤按鍵區域 高度
      */
-    private int KeyBoardH;
+    private int KeyBoardH = -1;
     /**
      * 鍵盤按鍵區域 margin TOP BOTTOM
      * //先算 物件高度 三行   [剩下高度/2]
      */
-    private int KeyBoardMTB;
+    private int KeyBoardMTB = -1;
     /**
      * 鍵盤按鍵區域 margin Left Right
      * //先算 物件高度 6 or 4   [剩下寬度/2]
      */
-    private int KeyBoardMRL;
+    private int KeyBoardMRL = -1;
     /**
      * 上一個點擊的 按鍵 index
      */
     private int KeyBoardItemPreviousIndex = -1;
+    /**
+     * 填答案 偏移量
+     */
+    private int KeyBoardItemPadding = 3;
+    /**
+     * keyboard touch index
+     */
+    private int keyBoardTouchIndex = -1;
 
-
+    /**
+     * fillGrid rect 範圍
+     */
+    private Rect fillGridRect;
     /**
      * 填寫區域 寬度
      */
@@ -134,7 +195,6 @@ public class SpellKeyBoard extends View {
      * 下一個使用的做答格子 index
      */
     private int fillGridUseNextIndex = 0;
-
     /**
      * 顯示 填寫格子 數量
      */
@@ -155,6 +215,18 @@ public class SpellKeyBoard extends View {
      * 大於鍵盤按鈕一點點的邊距
      */
     private float fillGridItemPadding = 1;
+    /**
+     * 答題區 左右 滑動極限 X = +-？
+     * fillGridMaxX最大值
+     * fillGridMinX最小值
+     * fillGridCanScroll 是否可滑動
+     * fillGridMoveNum 可以移動 [預設 + ]
+     */
+    private float fillGridMaxX;
+    private float fillGridMinX;
+    private float fillGridMoveNum;
+    private boolean fillGridCanScroll;
+
 
     /**
      * 按鍵 寬度
@@ -189,9 +261,13 @@ public class SpellKeyBoard extends View {
      */
     private Bitmap KeyboardItemBackTwo;
     /**
-     * 輸入框 normal
+     * 輸入框背景 type1
      */
-    private Bitmap FillGridItemNormal;
+    private Bitmap FillGridItemNormalType1;
+    /**
+     * 輸入框背景 type2
+     */
+    private Bitmap FillGridItemNormalType2;
 
     /**
      * 儲存現在 按鍵 的所有資訊
@@ -218,6 +294,7 @@ public class SpellKeyBoard extends View {
      */
     private int touchIndex;
 
+    private boolean isLock = false;
     /**
      * 是否啟動 退後鍵
      */
@@ -226,44 +303,51 @@ public class SpellKeyBoard extends View {
      * 是否啟動 加入答案
      */
     private boolean isAdd = false;
+    /**
+     * true 開始繪製 清除動畫
+     * false 動畫結束 或是 不執行
+     */
+    private boolean isClear = false;
+    /**
+     * true 開始繪製 移動動畫
+     * false 動畫結束 或是 不執行
+     */
+    private boolean isMove = false;
 
     public SpellKeyBoard(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         LogUtils.d("SpellKeyBoard context");
+        //init model
+        keyBoardModel = new KeyBoardModel();
+        fillGridModel = new FillGridModel();
+        workFilterModel = new WorkFilterModel();
+
 //        setBackgroundColor(Color.TRANSPARENT);
         TypedArray mTypedArray = context.obtainStyledAttributes(attrs, R.styleable.SpellKeyBoard);
         int normalKeyBoardItemRID = mTypedArray.getResourceId(R.styleable.SpellKeyBoard_normalKeyboardItem, R.drawable.keyboard_normal);
         int touchKeyBoardItemRID = mTypedArray.getResourceId(R.styleable.SpellKeyBoard_touchKeyboardItem, R.drawable.keyboard_press);
-        int normalFillGridItemRID = mTypedArray.getResourceId(R.styleable.SpellKeyBoard_normalFillGridItem, R.drawable.fillgrid_type1);
+        int normalFillGridItemRID1 = mTypedArray.getResourceId(R.styleable.SpellKeyBoard_normalFillGridItemType1, R.drawable.fillgrid_type1);
+        int normalFillGridItemRID2 = mTypedArray.getResourceId(R.styleable.SpellKeyBoard_normalFillGridItemType2, R.drawable.fillgrid_type2);
         int KeyboardItemBackOneRID = mTypedArray.getResourceId(R.styleable.SpellKeyBoard_KeyboardItemBackOne, R.drawable.keyboard_back_normal);
         int KeyboardItemBackTwoRID = mTypedArray.getResourceId(R.styleable.SpellKeyBoard_KeyboardItemBackTwo, R.drawable.keyboard_back_press);
         KeyBoardItemSpaceRL = mTypedArray.getDimension(R.styleable.SpellKeyBoard_KeyboardItemPadding, 10);
         KeyBoardItemSpaceTB = mTypedArray.getDimension(R.styleable.SpellKeyBoard_KeyboardItemPadding, 10);
         fillGridItemSpace = mTypedArray.getDimension(R.styleable.SpellKeyBoard_fillGridPaddingRL, 10);
         mTypedArray.recycle();
-        LogUtils.d("normalKeyBoardItemRID:" + normalKeyBoardItemRID);
-        LogUtils.d("touchKeyBoardItemRID:" + touchKeyBoardItemRID);
-        LogUtils.d("normalFillGridItemRID:" + normalFillGridItemRID);
-        LogUtils.d("KeyBoardItemSpaceRL:" + KeyBoardItemSpaceRL);
-        LogUtils.d("KeyBoardItemSpaceTB:" + KeyBoardItemSpaceTB);
-        LogUtils.d("fillGridItemSpace:" + fillGridItemSpace);
         /**
          * KeyBoardItemNormal、KeyBoardItemTouch 鍵盤使用圖片
-         * FillGridItemNormal 填充格子使用圖片
+         * FillGridItemNormalType1 填充格子使用圖片
          */
         KeyBoardItemNormal = BitmapFactory.decodeResource(getResources(), normalKeyBoardItemRID);
         KeyBoardItemTouch = BitmapFactory.decodeResource(getResources(), touchKeyBoardItemRID);
-        FillGridItemNormal = BitmapFactory.decodeResource(getResources(), normalFillGridItemRID);
+        FillGridItemNormalType1 = BitmapFactory.decodeResource(getResources(), normalFillGridItemRID1);
+        FillGridItemNormalType2 = BitmapFactory.decodeResource(getResources(), normalFillGridItemRID2);
         KeyboardItemBackOne = BitmapFactory.decodeResource(getResources(), KeyboardItemBackOneRID);
         KeyboardItemBackTwo = BitmapFactory.decodeResource(getResources(), KeyboardItemBackTwoRID);
-        LogUtils.d("KeyBoardItemNormal h: " + KeyBoardItemNormal.getHeight() + ", KeyBoardItemNormal W: " + KeyBoardItemNormal.getWidth());
-        LogUtils.d("KeyBoardItemTouch h: " + KeyBoardItemTouch.getHeight() + ", KeyBoardItemTouch W: " + KeyBoardItemTouch.getWidth());
-        LogUtils.d("FillGridItemNormal h: " + FillGridItemNormal.getHeight() + ", FillGridItemNormal W: " + FillGridItemNormal.getWidth());
         /**
          * 畫筆初始化
          */
         initPaint();
-
     }
 
     public void setAnswer(String answer) {
@@ -284,14 +368,22 @@ public class SpellKeyBoard extends View {
         LogUtils.d("answerNonSpacelength :" + answerNonSpacelength);
     }
 
-    public void setVersion(String version) {
-        this.version = version;
+    public void setmType(int mType) {
+        this.mType = mType;
     }
 
     public void setKeyBoardNum(int keyBoardNum) {
         this.KeyBoardNum = keyBoardNum;
-        this.KeyBoardLevelNum = KeyBoardNum / 3;//每一層數量
-        LogUtils.d("KeyBoardLevelNum: " + KeyBoardLevelNum);
+        /**
+         * 設定層級 鍵盤12個 > 4*3[層] , 鍵盤24個 > 6*4[層]
+         */
+        this.KeyBoardLevelNum = keyBoardNum < 24 ? 3 : 4;
+        /**
+         * 設定各層級數量 鍵盤12個 > 4/層 , 鍵盤24個 > 6/層
+         */
+        this.KeyBoardLevelCount = KeyBoardNum / KeyBoardLevelNum;//總數量 / 幾層 = 每一層幾個
+        LogUtils.d("設定幾層: " + KeyBoardLevelNum);
+        LogUtils.d("設定每一層的鍵盤數: " + KeyBoardLevelCount);
     }
 
     /**
@@ -316,6 +408,14 @@ public class SpellKeyBoard extends View {
         mFillGridPaint = new Paint();
         mFillGridPaint.setAntiAlias(true);
 
+        //動畫
+        mAnimPaint = new Paint();
+        mAnimPaint.setColor(Color.YELLOW);
+        mAnimPaint.setAntiAlias(true);//防鋸齒
+        mfont = Typeface.createFromAsset(getResources().getAssets(), "billy.otf");
+        mAnimPaint.setTypeface(mfont);//設定字體
+        mAnimPaint.setTextAlign(Paint.Align.CENTER);//繪製在中心點
+
         mContextPaint = new Paint();
         mContextPaint.setAntiAlias(true);
         mContextPaint.setColor(Color.TRANSPARENT);
@@ -323,333 +423,221 @@ public class SpellKeyBoard extends View {
     }
 
     /**
+     * 畫布初始
+     */
+    private void initCanvas() {
+        /**
+         * 繪製底圖 底圖畫布 ｜ 底圖圖示
+         */
+        mBitmap = Bitmap.createBitmap(SpellKeyBoardW, SpellKeyBoardH, Bitmap.Config.ARGB_8888);
+        mCanvas = new Canvas(mBitmap);
+        mCanvas.drawRect(new Rect(0, 0, SpellKeyBoardW, SpellKeyBoardH), mContextPaint);
+        /**
+         * 切割區域 鍵盤區
+         */
+        keyBoardRect = new Rect(0, fillGridH, KeyBoardW, KeyBoardH + fillGridH);
+        mKeyBoardBitmap = Bitmap.createBitmap(SpellKeyBoardW, fillGridH + KeyBoardH, Bitmap.Config.ARGB_8888);
+        mKeyBoardCanvas = new Canvas(mKeyBoardBitmap);
+        mKeyBoardCanvas.drawRect(keyBoardRect, mContextPaint);
+        /**
+         * 切割區域 答案區
+         */
+        fillGridRect = new Rect(0, 0, fillGridW, fillGridH);
+        mFillGridBitmap = Bitmap.createBitmap(SpellKeyBoardW, fillGridH + KeyBoardH, Bitmap.Config.ARGB_8888);
+        mFillGridCanvas = new Canvas(mFillGridBitmap);
+        mFillGridCanvas.drawRect(fillGridRect, mContextPaint);
+    }
+
+    /**
      * 鍵盤建立
      */
-    private void initKeyboardSize() {
+    private void initKeyboard() {
         /**
-         * 判斷 鍵盤按鈕 數量
+         * 建立鍵盤item 長 寬 間距
+         * KeyBoardLevelCount 每一層有幾個
+         * KeyBoardLevelNum 共幾層
+         *
+         * 計算鍵盤佈局
+         * 1080寬[預設]
+         *
+         * 比例設定[依據寬度]
+         * ([總寬(KeyBoardW)]- ( [左右間距(KeyBoardItemSpaceRL)*2(兩邊各有1)] * [每一層數量(KeyBoardLevelCount)] )/[每一層數量(KeyBoardLevelCount)] = [每一個Item長度]
+         * 比例設定[依據長度]
+         * ([總長(KeyBoardH)]- ( [上下間距(KeyBoardItemSpaceTB)*2(上下各有1)] * [共幾層(KeyBoardLevelNum)] ))/[共幾層(KeyBoardLevelNum)] = [每一個Item長度]
+         * >>>[取較短設定]<<<
+         *
+         * 計算鍵盤左右間距 ([總寬(KeyBoardW)] - ([每一層數量(KeyBoardLevelCount)]*([鍵盤長寬(keyboardItemHW)]+[左右間距(KeyBoardItemSpaceRL)*2(兩邊各有1)]))/2
+         * 計算鍵盤上下間距 ([總長(KeyBoardH)] - ([共幾層(KeyBoardLevelNum)]*([鍵盤長寬(keyboardItemHW)]+[左右間距(KeyBoardItemSpaceRL)*2(兩邊各有1)]))/2
          */
-        if (KeyBoardNum == 18) {
-            KeyBoardLevelNum = KeyBoardNum / 3; //6
-            /**
-             * 計算鍵盤佈局
-             * 1080寬
-             * 比例設定
-             * (1080-(左右間距(10)*2*6))/6 = 160
-             * if(((160+(10*2))*3) >  )
-             */
-            float itemW = new BigDecimal(((float) KeyBoardW - (float) (KeyBoardItemSpaceRL * 2 * 6)) / (float) 6).setScale(1, BigDecimal.ROUND_HALF_UP).floatValue() + 0.5f;
-            LogUtils.d("itemW:" + String.valueOf((int) (itemW)));
-            float allH = ((itemW) + (float) (10 * 2)) * 3;
-            LogUtils.d("allH:" + (int) allH);
-            if ((int) allH > KeyBoardH) {
-                LogUtils.d(">KeyBoardH");
-                //計算鍵盤長寬
-                float itemH = new BigDecimal(((float) KeyBoardH - (float) (KeyBoardItemSpaceTB * 2 * 3)) / (float) 3).setScale(1, BigDecimal.ROUND_HALF_UP).floatValue() + 0.5f;
-                LogUtils.d("itemH:" + String.valueOf((int) (itemH + 0.5f)));
-                KeyBoardItemH = (int) itemH;
-                KeyBoardItemW = (int) itemH;
-                //計算佈局 1. 鍵盤區域 上下 左右間距
-                float MRL = new BigDecimal((SpellKeyBoardW - ((float) (KeyBoardItemW + (KeyBoardItemSpaceRL * 2)) * 6) + (KeyBoardItemSpaceRL)) / (float) 2).setScale(1, BigDecimal.ROUND_HALF_UP).floatValue() + 0.5f;
-                float MTB = new BigDecimal((KeyBoardH - ((float) (KeyBoardItemH + (KeyBoardItemSpaceTB * 2)) * 3)) / (float) 2).setScale(1, BigDecimal.ROUND_HALF_UP).floatValue() + 0.5f;
-                LogUtils.d("MRL:" + String.valueOf((int) (MRL)));
-                KeyBoardMTB = (int) MTB;
-                KeyBoardMRL = (int) MRL;
-                LogUtils.d("KeyBoardMTB: " + KeyBoardMTB + ", KeyBoardMRL: " + KeyBoardMRL);
-            } else {
-                LogUtils.d("<KeyBoardH");
-                //計算鍵盤長寬
-                LogUtils.d("itemW:" + String.valueOf((int) (itemW + 0.5f)));
-                KeyBoardItemH = (int) itemW;
-                KeyBoardItemW = (int) itemW;
-                //計算佈局 1. 鍵盤區域 上下 左右間距
-                float MRL = new BigDecimal((SpellKeyBoardW - ((float) (KeyBoardItemW + (KeyBoardItemSpaceRL * 2)) * 6) + (KeyBoardItemSpaceRL)) / (float) 2).setScale(1, BigDecimal.ROUND_HALF_UP).floatValue() + 0.5f;
-                float MTB = new BigDecimal((KeyBoardH - ((float) (KeyBoardItemH + (KeyBoardItemSpaceTB * 2)) * 3)) / (float) 2).setScale(1, BigDecimal.ROUND_HALF_UP).floatValue() + 0.5f;
-                LogUtils.d("MTB:" + String.valueOf((int) (MTB + 0.5f)));
-                KeyBoardMTB = (int) MTB;
-                KeyBoardMRL = (int) MRL;
-                LogUtils.d("KeyBoardMTB: " + KeyBoardMTB + ", KeyBoardMRL: " + KeyBoardMRL);
-            }
-        } else {
-            KeyBoardLevelNum = KeyBoardNum / 3; //4
-            /**
-             * 計算鍵盤佈局
-             * 1080寬
-             * 比例設定
-             * (1080-(左右間距(10)*2*4))/4 = 250
-             * if(((250+(10*2))*3) > )
-             */
-            float itemW = new BigDecimal(((float) KeyBoardW - (float) (KeyBoardItemSpaceRL * 2 * 4)) / (float) 4).setScale(1, BigDecimal.ROUND_HALF_UP).floatValue() + 0.5f;
-            LogUtils.d("itemW:" + String.valueOf((int) (itemW + 0.5f)));
-            float allH = ((itemW + 0.5f) + (float) (10 * 2)) * 3;
-            LogUtils.d("allH:" + (int) allH);
-            if ((int) allH > KeyBoardH) {
-                LogUtils.d(">KeyBoardH");
-                //計算鍵盤長寬
-                float itemH = new BigDecimal(((float) KeyBoardH - (float) (KeyBoardItemSpaceTB * 2 * 3)) / (float) 3).setScale(1, BigDecimal.ROUND_HALF_UP).floatValue() + 0.5f;
-                LogUtils.d("itemH:" + String.valueOf((int) (itemH + 0.5f)));
-                KeyBoardItemH = (int) itemH;
-                KeyBoardItemW = (int) itemH;
-                //計算佈局 1. 鍵盤區域 上下 左右間距
-                float MRL = new BigDecimal((SpellKeyBoardW - ((float) (KeyBoardItemW + (KeyBoardItemSpaceRL * 2)) * 4) + (KeyBoardItemSpaceRL)) / (float) 2).setScale(1, BigDecimal.ROUND_HALF_UP).floatValue() + 0.5f;
-                float MTB = new BigDecimal((KeyBoardH - ((float) (KeyBoardItemH + (KeyBoardItemSpaceTB * 2)) * 3)) / (float) 2).setScale(1, BigDecimal.ROUND_HALF_UP).floatValue() + 0.5f;
-                LogUtils.d("MRL:" + String.valueOf((int) (MRL + 0.5f)));
-                KeyBoardMTB = (int) MTB;
-                KeyBoardMRL = (int) MRL;
-                LogUtils.d("KeyBoardMTB: " + KeyBoardMTB + ", KeyBoardMRL: " + KeyBoardMRL);
-            } else {
-                LogUtils.d("<KeyBoardH");
-                //計算鍵盤長寬
-                LogUtils.d("itemW:" + String.valueOf((int) (itemW + 0.5f)));
-                KeyBoardItemH = (int) itemW;
-                KeyBoardItemW = (int) itemW;
-                //計算佈局 1. 鍵盤區域 上下 左右間距
-                float MRL = new BigDecimal((SpellKeyBoardW - ((float) (KeyBoardItemW + (KeyBoardItemSpaceRL * 2)) * 4) + (KeyBoardItemSpaceRL)) / (float) 2).setScale(1, BigDecimal.ROUND_HALF_UP).floatValue() + 0.5f;
-                float MTB = new BigDecimal((KeyBoardH - ((float) (KeyBoardItemH + (KeyBoardItemSpaceTB * 2)) * 3)) / (float) 2).setScale(1, BigDecimal.ROUND_HALF_UP).floatValue() + 0.5f;
-                LogUtils.d("MTB:" + String.valueOf((int) (MTB + 0.5f)));
-                KeyBoardMTB = (int) MTB;
-                KeyBoardMRL = (int) MRL;
-                LogUtils.d("KeyBoardMTB: " + KeyBoardMTB + ", KeyBoardMRL: " + KeyBoardMRL);
-            }
 
-        }
         /**
          * 計算圖示縮小比例
          */
-        KeyBoardItemNormal = scaleBitmap(KeyBoardItemNormal, KeyBoardItemH);
-        KeyBoardItemTouch = scaleBitmap(KeyBoardItemTouch, KeyBoardItemH);
-        FillGridItemNormal = scaleBitmap(FillGridItemNormal, KeyBoardItemH);
-        KeyboardItemBackOne = scaleBitmap(KeyboardItemBackOne, KeyBoardItemH);
-        KeyboardItemBackTwo = scaleBitmap(KeyboardItemBackTwo, KeyBoardItemH);
+        KeyBoardItemNormal = BitmapUtils.scaleBitmap(KeyBoardItemNormal, KeyBoardItemH);
+        KeyBoardItemTouch = BitmapUtils.scaleBitmap(KeyBoardItemTouch, KeyBoardItemH);
+        FillGridItemNormalType1 = BitmapUtils.scaleBitmap(FillGridItemNormalType1, KeyBoardItemH);
+        FillGridItemNormalType2 = BitmapUtils.scaleBitmap(FillGridItemNormalType2, KeyBoardItemH);
+        KeyboardItemBackOne = BitmapUtils.scaleBitmap(KeyboardItemBackOne, KeyBoardItemH);
+        KeyboardItemBackTwo = BitmapUtils.scaleBitmap(KeyboardItemBackTwo, KeyBoardItemH);
+
         /**
-         * 鍵盤內容 18 or 16
-         * 鍵盤固定內容 [answer字數 | back*1]
-         * 剩餘內容 [隨機]
-         * 1.寫入 answer + 隨機 [array]
-         * 2.打亂排序Collections.shuffle(arrayList);
-         * 3.加入 back and 加上座標
+         * 取得鍵盤按鍵內容
+         * getKeyboardWord 設定內容
+         * setKeyBoardItemSize [設定座標][繪製]
          */
-        //寫入 answer + 隨機 [array] ;-1 > 預留back位置
-        int RandomNum = KeyBoardNum - answerNonSpacelength - 1;
-        keyWords = new ArrayList<>();
-        for (char c : answer.toCharArray()) {
-            if (!String.valueOf(c).equals(" ")) {
-                //寫入 answer
-                keyboard keyboard = new keyboard();
-                StringBuffer buffer = new StringBuffer();
-                buffer.append(c);
-                keyboard.setContent(buffer.toString());
-                keyboard.setAction(keyboard.Action_Keyboard);
-                keyWords.add(keyboard);
-            }
-        }
-        LogUtils.d("keyWords size: " + keyWords.size());
-        for (int i = 0; i < RandomNum; i++) {
-            //隨機 [array]
-            keyboard keyboard = new keyboard();
-            StringBuffer buffer = new StringBuffer();
-            Random r = new Random();
-            buffer.append(getRandomEnglishChar(r.nextInt(53)));//A~Z a~z ' - ; 54個char ; 0-53
-            keyboard.setContent(buffer.toString());
-            keyboard.setAction(keyboard.Action_Keyboard);
-            keyWords.add(keyboard);
-        }
-        LogUtils.d("3");
-        //打亂排序List.shuffle
-        Collections.shuffle(keyWords);
-        /**
-         * //加入 back and 加上座標
-         *
-         * 高 fillGridH + KeyBoardMTB +((KeyBoardItemH + (KeyBoardItemSpaceTB*2))*levelH)
-         * levelH = index<KeyBoardLevelNum - 1?1:index<KeyBoardLevelNum*2 - 1?2:3;//高度層級
-         * levelW = 0-5 / 1 | 6-11 / 2
-         *
-         * 寬 KeyBoardMRL + ((KeyBoardItemW + (KeyBoardItemSpaceRL*2))*levelW)
-         * int num = levelH*KeyBoardLevelNum - index;
-         * levelW = num == 6 ? 1: num == 5?2:num == 4?3:num == 3?4:num == 2?5:num == 1?6:6 ;
-         *
-         * //預先繪製的區域
-         * rect = new Rect((int)backKeyboard.getStartX(),(int)backKeyboard.getStartY(),
-         *(int)backKeyboard.getStartX()+KeyBoardItemW,(int)backKeyboard.getStartY()+KeyBoardH);
-         *backKeyboard.setmDrawRect(rect);
-         */
-        List<keyboard> mKeyWords = new ArrayList<>();
-        int index = 0;
-        int levelH = 1;
-        int levelW = 1;
-        for (keyboard keyboard : keyWords) {
-            //判斷高低左右層級
-            levelH = index <= KeyBoardLevelNum - 1 ? 0 : index <= KeyBoardLevelNum * 2 - 1 ? 1 : 2;//高度層級
-            LogUtils.d("levelH: " + levelH);
-            int num = (levelH + 1) * KeyBoardLevelNum - index;
-            if (KeyBoardLevelNum == 6)
-                levelW = num == 6 ? 0 : num == 5 ? 1 : num == 4 ? 2 : num == 3 ? 3 : num == 2 ? 4 : num == 1 ? 5 : 0;
-            else
-                levelW = num == 4 ? 0 : num == 3 ? 1 : num == 2 ? 2 : num == 1 ? 3 : 0;
+        keyWords = workFilterModel.getKeyboardWord(answer, KeyBoardNum, KeyBoardLevelCount);
+        keyWords = keyBoardModel.setKeyBoardItemSize(keyWords, mCanvas, KeyBoardLevelCount, KeyBoardMRL,
+                KeyBoardMTB, KeyBoardItemSpaceRL, KeyBoardItemSpaceTB, KeyBoardItemW, fillGridH, KeyBoardItemH,
+                KeyBoardItemNormal, KeyboardItemBackOne, mKeyboardPaint, mTextPaint);
 
-            //建立繪製區
-            Rect rect = null;
-            Bitmap showMap = null;
-            LogUtils.d("levelH: " + levelH + ",num: " + num + ",levelW: " + levelW + ",index: " + index);
-            if (index <= (KeyBoardLevelNum - 1)) {
-                //0-(KeyBoardLevelNum-1) => 0-3 | 0-5
-                if (index == (KeyBoardLevelNum - 1)) {
-                    // 3 | 5 //先back
-                    keyboard backKeyboard = new keyboard();
-                    backKeyboard.setAction(keyboard.Action_Back);
-                    backKeyboard.setStartX(KeyBoardMRL + ((KeyBoardItemW + (KeyBoardItemSpaceRL * 2)) * levelW));
-                    backKeyboard.setStartY(fillGridH + KeyBoardMTB + ((KeyBoardItemH + (KeyBoardItemSpaceTB * 2)) * levelH));
-                    rect = new Rect((int) backKeyboard.getStartX(), (int) backKeyboard.getStartY(),
-                            (int) backKeyboard.getStartX() + KeyBoardItemW, (int) backKeyboard.getStartY() + KeyBoardItemH);
-                    backKeyboard.setmDrawRect(rect);
-                    mKeyWords.add(backKeyboard);
-                    index++;
-                    //在normal
-                    keyboard.setStartX(KeyBoardMRL + ((KeyBoardItemW + (KeyBoardItemSpaceRL * 2)) * 0));
-                    keyboard.setStartY(fillGridH + KeyBoardMTB + ((KeyBoardItemH + (KeyBoardItemSpaceTB * 2)) * 1));
-
-                    rect = new Rect((int) keyboard.getStartX(), (int) keyboard.getStartY(),
-                            (int) keyboard.getStartX() + KeyBoardItemW, (int) keyboard.getStartY() + KeyBoardItemH);
-                    keyboard.setmDrawRect(rect);
-                    mKeyWords.add(keyboard);
-                    if (index == 6)
-                        LogUtils.d("levelH: " + levelH + 1 + ",levelW: " + 1 + ",index: " + index);
-                } else {
-                    // 0-2 | 0-4
-                    keyboard.setStartX(KeyBoardMRL + ((KeyBoardItemW + (KeyBoardItemSpaceRL * 2)) * levelW));
-                    keyboard.setStartY(fillGridH + KeyBoardMTB + ((KeyBoardItemH + (KeyBoardItemSpaceTB * 2)) * levelH));
-                    rect = new Rect((int) keyboard.getStartX(), (int) keyboard.getStartY(),
-                            (int) keyboard.getStartX() + KeyBoardItemW, (int) keyboard.getStartY() + KeyBoardItemH);
-                    keyboard.setmDrawRect(rect);
-                    mKeyWords.add(keyboard);
-                }
-            } else {
-                // 4-11 | 6-17
-                keyboard.setStartX(KeyBoardMRL + ((KeyBoardItemW + (KeyBoardItemSpaceRL * 2)) * levelW));
-                keyboard.setStartY(fillGridH + KeyBoardMTB + ((KeyBoardItemH + (KeyBoardItemSpaceTB * 2)) * levelH));
-                rect = new Rect((int) keyboard.getStartX(), (int) keyboard.getStartY(),
-                        (int) keyboard.getStartX() + KeyBoardItemW, (int) keyboard.getStartY() + KeyBoardItemH);
-                keyboard.setmDrawRect(rect);
-                mKeyWords.add(keyboard);
-            }
-            index++;
-            LogUtils.d("index: " + index);
-        }
-//        LogUtils.d("4");
-        keyWords = mKeyWords;
-        setTextSizeForWidth(mTextPaint, KeyBoardItemH);//自適應字體
-        for (keyboard keyboard : keyWords) {
-            LogUtils.d("keyWords: " + keyboard.toString());
-            if (keyboard.getmDrawRect() != null) {
-                WeakReference<Rect> rect = new WeakReference<Rect>(keyboard.getmDrawRect());
-                if (!keyboard.getAction().equals(keyboard.Action_Back)) {
-                    /**
-                     * 如果已經使用 use = true
-                     * 不繪圖
-                     * 反向繪製
-                     */
-                    if (!keyboard.isUse()){
-                        mCanvas.drawBitmap(KeyBoardItemNormal, null, rect.get(), mKeyboardPaint);
-                        int textX = (int) (keyboard.getStartX() + (KeyBoardItemW / 2 - mTextPaint.measureText(keyboard.getContent())) + 0.5f);
-                        int textY = (int) (keyboard.getStartY() + (KeyBoardItemW / 2 - ((mTextPaint.descent() + mTextPaint.ascent()))) - 0.5f);
-                        LogUtils.d(" textX " + textX + ", textY" + textY);
-                        mCanvas.drawText(keyboard.getContent(), keyboard.getStartX() + KeyBoardItemW / 2, textY, mTextPaint);
-                    }else{
-                        mCanvas.drawBitmap(KeyBoardItemNormal, null, keyboard.getmDrawRectFill(), mKeyboardPaint);
-                        int textX = (int) (keyboard.getStartX() + (KeyBoardItemW / 2 - mTextPaint.measureText(keyboard.getContent())) + 0.5f);
-                        int textY = (int) (keyboard.getStartY() + (KeyBoardItemW / 2 - ((mTextPaint.descent() + mTextPaint.ascent()))) - 0.5f);
-                        LogUtils.d(" textX " + textX + ", textY" + textY);
-                        mCanvas.drawText(keyboard.getContent(), keyboard.getStartX() + KeyBoardItemW / 2, textY, mTextPaint);
-                    }
-                } else {
-                    mCanvas.drawBitmap(KeyboardItemBackOne, null, rect.get(), mKeyboardPaint);
-                }
-
-            }
-        }
     }
 
     /**
      * 答案欄建立
      */
-    private void initFillGridSize() {
+    private void initFillGrid() {
+        fillGrids = fillGridModel.setFillGridItemSize(answer, mCanvas, mFillGridPaint, mType, FillGridItemNormalType1,
+                FillGridItemNormalType2, fillGridMRL, fillGridItemW, fillGridItemSpace, fillGridMTB, fillGridItemH);
+    }
+
+    /**
+     * 長寬參數初始化
+     */
+    private void initViewSize() {
+        /**
+         * 鍵盤區
+         */
+
+        LogUtils.d("鍵盤按鍵左右間距1: " + (int) KeyBoardItemSpaceRL);
+        //[依據寬度] ([總寬]- ( [左右間距(10)*2(兩邊各有1)] * [每一層數量(KeyBoardLevelCount)] ))/[每一層數量(KeyBoardLevelCount)] = [每一個Item長度]
+        float ItemhwForWidth = new BigDecimal((((float) KeyBoardW - (KeyBoardItemSpaceRL * 2 * KeyBoardLevelCount))) / (float) KeyBoardLevelCount + 0.5f).setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
+        LogUtils.d("依據寬度計算鍵盤長寬數值: " + ItemhwForWidth);
+        LogUtils.d("依據寬度計算鍵盤長寬數值 int: " + (int) ItemhwForWidth);
+        //[依據長度]([總長(KeyBoardH)]- ( [上下間距(KeyBoardItemSpaceTB)*2(上下各有1)] * [共幾層(KeyBoardLevelNum)] ))/[共幾層(KeyBoardLevelNum)] = [每一個Item長度]
+        float ItemhwForHeight = new BigDecimal(((float) KeyBoardH - (KeyBoardItemSpaceTB * 2 * KeyBoardLevelNum)) / (float) KeyBoardLevelNum + 0.5f).setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
+        LogUtils.d("依據高度計算鍵盤長寬數值: " + ItemhwForHeight);
+        LogUtils.d("依據高度計算鍵盤長寬數值 int: " + (int) ItemhwForHeight);
+        //鍵盤按鍵 長寬 ([總寬(KeyBoardW)] - ([每一層數量(KeyBoardLevelCount)]*([鍵盤長寬(keyboardItemHW)]+[左右間距(KeyBoardItemSpaceRL)*2(兩邊各有1)]))
+        float keyboardItemHW = ItemhwForWidth > ItemhwForHeight ? ItemhwForHeight : ItemhwForWidth;//TODO
+        LogUtils.d("鍵盤按鍵使用長寬: " + keyboardItemHW);
+        LogUtils.d("鍵盤按鍵使用長寬 int: " + (int) keyboardItemHW);
+        //確定 鍵盤本身 左右間距 ([總寬(KeyBoardW)] - ([每一層數量(KeyBoardLevelCount)]*([鍵盤長寬(keyboardItemHW)]+[左右間距(KeyBoardItemSpaceRL)*2(兩邊各有1)])
+        float keyboardSpaceRL = new BigDecimal((((float) KeyBoardW - (((float) ((int) keyboardItemHW)) + (KeyBoardItemSpaceRL * 2)) * KeyBoardLevelCount)) / 2 + 0.5f).setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
+        LogUtils.d("鍵盤左右間距: " + keyboardSpaceRL);
+        LogUtils.d("鍵盤左右間距 int: " + (int) keyboardSpaceRL);
+        /**
+         * 鍵盤左右間距>50 重新設置 item左右間距
+         */
+        if (keyboardSpaceRL > 80 && KeyBoardLevelCount > 4) {
+            LogUtils.d("鍵盤按鍵左右間距2: " + (int) KeyBoardItemSpaceRL);
+            KeyBoardItemSpaceRL += new BigDecimal(((keyboardSpaceRL - 80f) * 2 / ((float) KeyBoardLevelCount * 2f)) / 2 + 0.5f).setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
+            LogUtils.d("重新校正 鍵盤按鍵左右間距3: " + (int) KeyBoardItemSpaceRL);
+            keyboardSpaceRL = 80f;
+        }
+        //確定 鍵盤本身 上下間距 ([總長(KeyBoardH)] - ([共幾層(KeyBoardLevelNum)]*([鍵盤長寬(keyboardItemHW)]+[上下間距(KeyBoardItemSpaceTB)*2(兩邊各有1)])+左右間距(KeyBoardItemSpaceTB))/2
+        float keyboardSpaceTB = new BigDecimal((((float) KeyBoardH - (((float) ((int) keyboardItemHW)) + (KeyBoardItemSpaceTB * 2)) * KeyBoardLevelNum) + KeyBoardItemSpaceTB) / 2 + 0.5f).setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
+        LogUtils.d("鍵盤上下間距: " + keyboardSpaceTB);
+        LogUtils.d("鍵盤上下間距 int: " + (int) keyboardSpaceTB);
+
+        KeyBoardItemH = (int) keyboardItemHW;
+        KeyBoardItemW = (int) keyboardItemHW;
+        KeyBoardMRL = (int) keyboardSpaceRL;
+        KeyBoardMTB = (int) keyboardSpaceTB;
+
+        /**
+         * 答案區
+         */
+
         /**
          * 1.確定答案格數量
          * 1-1.計算格子長寬
          * 1-2.計算每個格子xy
-         * 2.建立答案格子
          */
         LogUtils.d("答案長度[含空格]:" + answerlength);
+        LogUtils.d("答案長度[不含空格]:" + answerNonSpacelength);
+        /**
+         * fillGridNum 需要建立的格子數量 [答案長度[含空格]]
+         */
         fillGridNum = answerlength;
+        /**
+         * 格子長寬 = 鍵盤長寬
+         */
         fillGridItemH = fillGridItemW = KeyBoardItemH;
         /**
-         *計算格子長寬
-         *先確定所有格子的加總 不用滑
+         *計算 [答題區] 左右間距、上下間距
          */
-        //用鍵盤的寬來計算
-        int itemWidth = (int) (KeyBoardItemW + (fillGridItemSpace * 2) + (fillGridItemPadding * 2));
-        int itemSpaceWidth = (int) (KeyBoardItemW / 2);
-        int itemHeight = (int) (KeyBoardItemH + (fillGridItemPadding * 2));
-        int totalWidth = itemWidth * answerNonSpacelength + itemSpaceWidth * (answerlength - answerNonSpacelength);
-        if (totalWidth < SpellKeyBoardW) {
-            //加總寬 < 螢幕寬
+        /**
+         *單一作答格子 「＋間距」
+         */
+        LogUtils.d("答題格子 長寬  [不含間距]:" + KeyBoardItemW);
+        LogUtils.d("答題格子[空格] 長寬  [不含間距]:" + KeyBoardItemW / 2);
+        float itemWidth_ = new BigDecimal(((float) KeyBoardItemW + (fillGridItemSpace * 2f) + 0.5f)).setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
+        float itemSpaceWidth_ = new BigDecimal((((float) KeyBoardItemW / 2f) + (fillGridItemSpace * 2f) + 0.5f)).setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
+        float itemHeight_ = new BigDecimal(((float) KeyBoardItemH + (fillGridItemSpace * 2f) + 0.5f)).setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
+        float totalWidth_ = new BigDecimal(itemWidth_ * (float) answerNonSpacelength + itemSpaceWidth_ * (float) (answerlength - answerNonSpacelength)).setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
+        LogUtils.d("答題格子 長寬  [含間距]:" + (int) itemWidth_);
+        LogUtils.d("答題格子[空格] 長寬  [含間距]:" + (int) itemSpaceWidth_);
+        LogUtils.d("答題區 總寬度 :" + (int) totalWidth_);
+        /**
+         * 判斷是否可以滑動？
+         * 滑動的左右Ｘ值各為多少？
+         */
+        if (totalWidth_ < SpellKeyBoardW) {
+            /**
+             * (加總寬 < 螢幕寬)  => 不能滑動
+             */
+            fillGridCanScroll = false;
             /**
              * 設定顯示區域母體左右上下間距
              */
-            float itemMRL = new BigDecimal(((float) fillGridW - (float) totalWidth) / (float) 2).setScale(1, BigDecimal.ROUND_HALF_UP).floatValue() + 0.5f;
-            float itemMTB = new BigDecimal(((float) fillGridH - (float) (itemHeight)) / (float) 2).setScale(1, BigDecimal.ROUND_HALF_UP).floatValue() + 0.5f;
+            float itemMRL = new BigDecimal(((float) fillGridW - totalWidth_) / (float) 2 + 0.5f).setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
+            float itemMTB = new BigDecimal(((float) fillGridH - itemHeight_) / (float) 2 + 0.5f).setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
             fillGridMRL = (int) itemMRL;
             fillGridMTB = (int) itemMTB;
+            LogUtils.d("答題區 上下間距 :" + fillGridMTB + ", 答題區 左右間距 :" + fillGridMRL);
         } else {
-            //加總寬 > 螢幕寬
+            /**
+             * (加總寬 > 螢幕寬)  => 能滑動
+             */
+            fillGridCanScroll = true;
+            /**
+             * 左右滑動極限 [X]
+             */
+            fillGridMaxX = new BigDecimal((totalWidth_ - (float) fillGridW) / 2f + 0.5f).setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
+            fillGridMinX = new BigDecimal(((float) fillGridW - totalWidth_) / 2f + 0.5f).setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
+            /**
+             * 預設繪製都是由 左邊開始對齊
+             * 所以給予得值 = fillGridMinX 表示可以由右向左滑動 X偏移量 + [正]
+             * fillGridMoveNum = fillGridMinX;
+             * fillGridMoveNum = -fillGridMinX = fillGridMaxX 時，表示 已經滑到最右邊
+             * 可以由左向右滑動 X偏移量 -[負]
+             */
+            fillGridMoveNum = fillGridMinX;
+            LogUtils.d("答題區 介面左邊滑動極限Ｘ座標 fillGridMinX :" + fillGridMinX + ", 答題區 介面右邊滑動極限Ｘ座標 fillGridMaxX :" + fillGridMaxX);
             /**
              * 設定顯示區域母體左右上下間距
              */
             float itemMRL = 0;
-            float itemMTB = new BigDecimal(((float) fillGridH - (float) (itemHeight)) / (float) 2).setScale(1, BigDecimal.ROUND_HALF_UP).floatValue() + 0.5f;
+            float itemMTB = new BigDecimal(((float) fillGridH - itemHeight_) / (float) 2 + 0.5f).setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
             fillGridMRL = (int) itemMRL;
             fillGridMTB = (int) itemMTB;
-        }
-        /**
-         * 建立格子資訊
-         * (fillGridItemW/2)*spaceNum 空格
-         */
-        fillGrids = new ArrayList<>();
-        int index = 0;
-        int spaceNum = 0;
-        for (char c : answer.toCharArray()) {
-            float fillx = new BigDecimal((float) fillGridMRL + (fillGridItemW / 2) * spaceNum +
-                    (((float) fillGridItemW + (fillGridItemSpace * 2)) * (float) index)).setScale(1, BigDecimal.ROUND_HALF_UP).floatValue() + 0.5f;
-            float filly = fillGridMTB;
-
-            fillGrid fb = new fillGrid();
-            fb.setContent(String.valueOf(c));
-            fb.setStartX(fillx);
-            fb.setStartX(filly);
-            Rect r = new Rect((int) fillx, (int) filly, (int) (fillx + fillGridItemW), (int) (filly + fillGridItemH));
-            fb.setmDrawRect(r);//放入繪製範圍
-            if (String.valueOf(c).equals(" ")) {
-                //空格資料
-                fb.setAction(fb.Action_Space);
-                spaceNum++;
-            } else {
-                //非空格資料
-                fb.setAction(fb.Action_Fillgrid);
-                mCanvas.drawBitmap(FillGridItemNormal, null, r, mFillGridPaint);
-                index++;
-            }
-            LogUtils.d(" fillGrid: " + fb.toString());
-            fillGrids.add(fb);
-
+            LogUtils.d("答題區 上下間距 :" + fillGridMTB + ", 答題區 左右間距 :" + fillGridMRL);
         }
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        LogUtils.d("SpellKeyBoard onDraw");
+        LogUtils.d("onDraw");
         if (mBitmap != null) {
-            canvas.drawBitmap(mBitmap, 0, 0, null);
+            canvas.drawBitmap(mBitmap, 0, 0, null);//底圖
+            canvas.drawBitmap(mFillGridBitmap, 0, 0, null);//答題
+            canvas.drawBitmap(mKeyBoardBitmap, 0, 0, null);//鍵盤
+            if (isMove) {
+                moveFillGrid();
+            } else {
+                fillGridAnim(canvas);//檢查有沒有答題動畫|清除動畫;
+            }
         } else {
             LogUtils.d("mBitmap null");
         }
@@ -661,179 +649,497 @@ public class SpellKeyBoard extends View {
         int widthMode = MeasureSpec.getMode(widthMeasureSpec);
         int heightMode = MeasureSpec.getMode(heightMeasureSpec);
         LogUtils.d("SpellKeyBoard " + "widthMode:" + widthMode + " ,heightMode:" + heightMode);
-
-
-        if (widthMode == MeasureSpec.EXACTLY && heightMode == MeasureSpec.EXACTLY) {
-            /**
-             *設定全局 長寬
-             */
-            SpellKeyBoardW = MeasureSpec.getSize(widthMeasureSpec);
-            SpellKeyBoardH = MeasureSpec.getSize(heightMeasureSpec);
-            LogUtils.d("SpellKeyBoard " + "SpellKeyBoardW:" + SpellKeyBoardW + " ,SpellKeyBoardH:" + SpellKeyBoardH);
-            /**
-             * 設定 鍵盤佈局 長寬
-             */
-
-            KeyBoardW = SpellKeyBoardW;
-            KeyBoardH = SpellKeyBoardH / 3 * 2;
-            LogUtils.d("SpellKeyBoard " + "KeyBoardW:" + KeyBoardW + " ,KeyBoardH:" + KeyBoardH);
-            /**
-             * 設定 顯示佈局[滑動] 長寬
-             */
-            fillGridW = SpellKeyBoardW;
-            fillGridH = SpellKeyBoardH / 3;
-            LogUtils.d("SpellKeyBoard " + "fillGridW:" + fillGridW + " ,fillGridH:" + fillGridH);
-            /**
-             * 繪製畫布 底版
-             */
-            mBitmap = Bitmap.createBitmap(SpellKeyBoardW, SpellKeyBoardH, Bitmap.Config.ARGB_8888);
-            mCanvas = new Canvas(mBitmap);
-            mCanvas.drawRect(new Rect(0, 0, SpellKeyBoardW, SpellKeyBoardH), mContextPaint);
-
-            //鍵盤
-            initKeyboardSize();
-            //答案格子
-            initFillGridSize();
-            //刷新
-            invalidate();//
-        }
     }
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        LogUtils.d("具體座標: Xl=" + left + " Yt=" + top + " Xr=" + right + " Yb=" + bottom + ",是否變動=" + changed);
+        /**
+         * left,top,right,bottom
+         * (changed)false = 相同佈局
+         * (changed)true = 不同佈局 置換佈局
+         */
+        if (!changed) return;
+        /**
+         *設定全局 長寬
+         */
+        SpellKeyBoardW = right;
+        SpellKeyBoardH = bottom;
+        LogUtils.d("View 長寬： " + "長=" + SpellKeyBoardW + " ,寬=" + SpellKeyBoardH);
+        /**
+         * 建立比例
+         */
+        float tdH = new BigDecimal((float) SpellKeyBoardW / (float) KeyBoardLevelCount)
+                .setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
+        float tdW = new BigDecimal((float) SpellKeyBoardH / (float) KeyBoardLevelNum)
+                .setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
+        float td = tdH > tdW ? tdW : tdH;//確定計算標準
+        fillAreaPercentage = new BigDecimal((float) td * 1.3f / (float) SpellKeyBoardH)
+                .setScale(3, BigDecimal.ROUND_HALF_UP).floatValue();
+        keyboardAreaPercentage = new BigDecimal(1f - fillAreaPercentage)
+                .setScale(3, BigDecimal.ROUND_HALF_UP).floatValue();
+        LogUtils.d("Percentage " + "fillAreaPercentage:" + String.valueOf(fillAreaPercentage) +
+                " ,keyboardAreaPercentage:" + String.valueOf(keyboardAreaPercentage));
+        /**
+         * 設定 鍵盤佈局 長寬
+         */
+        KeyBoardW = SpellKeyBoardW;
+        KeyBoardH = (int) new BigDecimal((float) SpellKeyBoardH * keyboardAreaPercentage)
+                .setScale(3, BigDecimal.ROUND_HALF_UP).floatValue();
+        LogUtils.d("SpellKeyBoard " + "KeyBoardW:" + KeyBoardW + " ,KeyBoardH:" + KeyBoardH);
+
+        /**
+         * 設定 顯示佈局[滑動] 長寬
+         */
+        fillGridW = SpellKeyBoardW;
+        fillGridH = (int) new BigDecimal((float) SpellKeyBoardH * fillAreaPercentage)
+                .setScale(3, BigDecimal.ROUND_HALF_UP).floatValue();
+
+        LogUtils.d("SpellKeyBoard " + "fillGridW:" + fillGridW + " ,fillGridH:" + fillGridH);
+        /**
+         * init canvas
+         */
+        initCanvas();
+        /**
+         * 計算 佈局參數 「鍵盤、答案」
+         */
+        initViewSize();
+        /**
+         * 自適應字體
+         */
+        TextUtils.setTextSizeForWidth(mTextPaint, KeyBoardItemH);//自適應字體
+        TextUtils.setTextSizeForWidth(mAnimPaint, KeyBoardItemH);//自適應字體[動畫用]
+        /**
+         * 鍵盤
+         */
+        initKeyboard();
+        /**
+         * 答案格子
+         */
+        initFillGrid();
+
+        //刷新
+        invalidate();
+
         super.onLayout(changed, left, top, right, bottom);
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasWindowFocus) {
+        super.onWindowFocusChanged(hasWindowFocus);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         LogUtils.d("event.getX():" + event.getX());
         LogUtils.d("event.getY():" + event.getY());
-        LogUtils.d("getAction: "+event.getAction());
+        LogUtils.d("getAction: " + event.getAction());
+        LogUtils.d("isLock: " + isLock);
+        //Lock 防呆
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            //防呆 避免動畫結束 還沒解除lock
+            boolean isOK = true;
+            for (fillGrid f : fillGrids) {
+                if (f.isAnim() && f.isAnimFinished()) {
+                    LogUtils.d("還有還沒結束 :" + f);
+                }
+            }
+            if (isOK) isLock = false;
+            LogUtils.d("isLock: " + isLock);
+        }
+        //一般touch判斷
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                touchX = event.getX();
+                touchY = event.getY();
+                touchKeyBorad(event);
+                break;
+            case MotionEvent.ACTION_UP:
+                freedKeyBorad();
+                break;
+        }
+        //範圍判斷
+        if (keyBoardRect.contains((int) event.getX(), (int) event.getY())) {
+            /**
+             * 鍵盤區域
+             */
+            LogUtils.d("鍵盤區");
+            touchKeyBoardArea(event);
+        } else {
+            /**
+             * 答案區域
+             */
+            LogUtils.d("答案區");
+            if (isLock) {
+                return !isLock;
+            }
+            /**
+             * 紀錄座標
+             */
+            touchFillGridArea(event);
+        }
+        return true;
+    }
 
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        listener.update();
+    }
+
+    //view 被回收怎樣處理
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        LogUtils.d("onDetachedFromWindow");
+        /**
+         * 清除內存
+         */
+        unsubscribe();
+    }
+
+    /**
+     * 回收機制
+     */
+    public void unsubscribe() {
+        LogUtils.d("清除資訊");
+        //
+        if (mBitmap != null) {
+//            LogUtils.d("1");
+            mBitmap.recycle();
+            mBitmap = null;
+        }
+        //
+        if (keyBoardRect != null) {
+//            LogUtils.d("2");
+            keyBoardRect = null;
+        }
+        //
+        if (fillGridRect != null) {
+//            LogUtils.d("3");
+            fillGridRect = null;
+        }
+        //
+        if (KeyBoardItemNormal != null) {
+//            LogUtils.d("4");
+            KeyBoardItemNormal.recycle();
+            KeyBoardItemNormal = null;
+        }
+        if (KeyBoardItemTouch != null) {
+//            LogUtils.d("5");
+            KeyBoardItemTouch.recycle();
+            KeyBoardItemTouch = null;
+        }
+        if (KeyboardItemBackOne != null) {
+//            LogUtils.d("6");
+            KeyboardItemBackOne.recycle();
+            KeyboardItemBackOne = null;
+        }
+        if (KeyboardItemBackTwo != null) {
+//            LogUtils.d("7");
+            KeyboardItemBackTwo.recycle();
+            KeyboardItemBackTwo = null;
+        }
+        if (FillGridItemNormalType1 != null) {
+//            LogUtils.d("8");
+            FillGridItemNormalType1.recycle();
+            FillGridItemNormalType1 = null;
+        }
+        if (FillGridItemNormalType2 != null) {
+//            LogUtils.d("9");
+            FillGridItemNormalType2.recycle();
+            FillGridItemNormalType2 = null;
+        }
+
+        if (keyWords != null) {
+//            LogUtils.d("10");
+            keyWords.clear();
+            keyWords = null;
+        }
+        if (fillGrids != null) {
+//            LogUtils.d("11");
+            fillGrids.clear();
+            fillGrids = null;
+        }
+        if (answerList != null) {
+//            LogUtils.d("12");
+            answerList.clear();
+            answerList = null;
+        }
+
+    }
+
+    /**
+     * 鍵盤區 KeyBoardArea touch
+     */
+    private void touchKeyBoardArea(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 LogUtils.d("ACTION_DOWN");
-                for(keyboard k : keyWords){
-                    if(k.getmDrawRect().contains((int)event.getX(),(int)event.getY())){
-                        if(k.getAction().equals(k.Action_Keyboard)){
-                            if(!k.isUse()) {
-                                //keyboard
-                                mCanvas.drawBitmap(KeyBoardItemTouch, null, k.getmDrawRect(), mKeyboardPaint);
-                                int textX = (int) (k.getStartX() + (KeyBoardItemW / 2 - mTextPaint.measureText(k.getContent())) + 0.5f);
-                                int textY = (int) (k.getStartY() + (KeyBoardItemW / 2 - ((mTextPaint.descent() + mTextPaint.ascent()))) - 0.5f);
-                                mCanvas.drawText(k.getContent(), k.getStartX() + KeyBoardItemW / 2, textY, mTextPaint);
-                            }
-                        }else{
-                            //back
-                            mCanvas.drawBitmap(KeyboardItemBackTwo, null, k.getmDrawRect(), mKeyboardPaint);
-
-                        }
-                        postInvalidate();
-                    }
-                }
-                touchDown(event);
+                //touch
+                touchKeyBorad(event);
+                //
+                touchDownKeyBoardArea(event);
                 break;
             case MotionEvent.ACTION_UP:
-                for(keyboard k : keyWords){
-                    if(k.getmDrawRect().contains((int)event.getX(),(int)event.getY())){
-                        if(k.getAction().equals(k.Action_Keyboard)){
-                            if(!k.isUse()) {
-                                //keyboard
-                                mCanvas.drawBitmap(KeyBoardItemNormal, null, k.getmDrawRect(), mKeyboardPaint);
-                                int textX = (int) (k.getStartX() + (KeyBoardItemW / 2 - mTextPaint.measureText(k.getContent())) + 0.5f);
-                                int textY = (int) (k.getStartY() + (KeyBoardItemW / 2 - ((mTextPaint.descent() + mTextPaint.ascent()))) - 0.5f);
-                                mCanvas.drawText(k.getContent(), k.getStartX() + KeyBoardItemW / 2, textY, mTextPaint);
-                            }
-                        }else{
-                            //back
-                            mCanvas.drawBitmap(KeyboardItemBackOne, null, k.getmDrawRect(), mKeyboardPaint);
-                        }
-                        postInvalidate();
-                    }
-                }
-                touchUp(event);
+                touchUpKeyBoardArea(event);
                 break;
             case MotionEvent.ACTION_MOVE:
+                LogUtils.d("ACTION_MOVE");
+                break;
+            case MotionEvent.ACTION_CANCEL:
+                LogUtils.d("ACTION_CANCEL");
+                break;
+        }
+    }
 
+    /**
+     * 答案區 touch 事件
+     */
+    private void touchFillGridArea(MotionEvent event) {
+        /**
+         * 判斷前先防呆 如果down落點 在keyboardRect
+         */
+        if (keyBoardRect.contains((int) touchX, (int) touchY)) return;
+
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                LogUtils.d("ACTION_DOWN 現在的偏移量：" + fillGridMoveNum);
+                isMove = true;
+                break;
+            case MotionEvent.ACTION_MOVE:
+                float x = new BigDecimal(touchX - event.getX()).setScale(0, BigDecimal.ROUND_HALF_DOWN).floatValue();
+                LogUtils.d("X位移：" + x);
+                float y = new BigDecimal(touchY - event.getY()).setScale(0, BigDecimal.ROUND_HALF_DOWN).floatValue();
+                LogUtils.d("y位移：" + y);
+                touchX = event.getX();
+                touchY = event.getY();
+
+                //
+                if (x > 0) {
+                    //左滑
+                    //比對右邊邊際線 x 座標
+                    Rect rect = fillGrids.get(fillGrids.size() - 1).getmDrawRect();
+                    if (rect.right > (SpellKeyBoardW - fillGridMRL)) {
+                        //表示可以繼續左滑
+                        if ((rect.right - x) > (SpellKeyBoardW - fillGridMRL)) {
+                            //足夠的滑動空間 do null 不改變
+                            LogUtils.d("不改變 " + x);
+                        } else {
+                            //不足夠的滑動空間 重新設定 x = [目前的x座標 - (總寬-答題區左右間距)]
+                            x = rect.right - (SpellKeyBoardW - fillGridMRL);
+                            LogUtils.d("改變 " + x);
+                        }
+                    } else {
+                        LogUtils.d("不動");
+                        //不能滑動
+
+                        return;
+                    }
+                } else {
+                    //右滑
+                    //比對左邊邊際線 x 座標
+                    Rect rect = fillGrids.get(0).getmDrawRect();
+                    if (rect.left < fillGridMRL) {
+                        //表示可以繼續右滑
+                        if ((rect.left - x) < fillGridMRL) {
+                            //足夠的滑動空間 do null 不改變
+                            LogUtils.d("不改變 " + x);
+                        } else {
+                            //不足夠的滑動空間 重新設定 x = [目前的x座標 - (總寬-答題區左右間距)]
+                            x = rect.left - fillGridMRL;
+                            LogUtils.d("改變 " + x);
+                        }
+                    } else {
+                        //不能滑動
+                        LogUtils.d("不動");
+                        isMove = false;
+                        return;
+                    }
+
+                }
+                LogUtils.d("ACTION_MOVE 現在的偏移量：" + x);
+                /**
+                 * 繪製移動
+                 */
+                for (fillGrid f : fillGrids) {
+                    Rect currentRect = f.getmDrawRect();
+                    LogUtils.d("使用rect:" + f.getAnswerRect());
+                    float xOffset_l = new BigDecimal((float) currentRect.left - x).setScale(0, BigDecimal.ROUND_HALF_DOWN).floatValue();
+                    float xOffset_r = new BigDecimal((float) currentRect.right - x).setScale(0, BigDecimal.ROUND_HALF_DOWN).floatValue();
+                    Rect DrawRect = new Rect((int) xOffset_l, currentRect.top, (int) xOffset_r, currentRect.bottom);
+                    LogUtils.d("DrawRect:" + DrawRect);
+                    f.setmDrawRect(DrawRect);
+                    /**
+                     * 答案格使用中
+                     */
+                    if (f.isUse()) {
+                        f.setAnswerRect(DrawRect);
+                    }
+                }
+                invalidate();
+                break;
+            case MotionEvent.ACTION_UP:
+                isMove = false;
+                break;
+            case MotionEvent.ACTION_CANCEL:
+                isMove = false;
                 break;
         }
 
-        return true;
+
+    }
+
+    //測試移動效果
+
+    /**
+     *
+     */
+    private void moveFillGrid() {
+        mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+        //
+        int index = 0;
+        for (fillGrid fillGrid : fillGrids) {
+            /**
+             * 上答案格底圖
+             */
+            if (!fillGrid.getContent().equals(" ")) {
+                LogUtils.d("繪製 答案格 底圖");
+                mCanvas.drawBitmap(mType == 1 ? FillGridItemNormalType1 : FillGridItemNormalType2, null, fillGrid.getmDrawRect(), mFillGridPaint);
+            }
+            LogUtils.d(" isUse " + fillGrid.isUse() + ", isAnim" + fillGrid.isAnim() + ", isAdd" + fillGrid.isAdd());
+            /**
+             * 判斷 isUse 是使用過的 或是 沒有使用過的
+             */
+
+            if (fillGrid.isUse() && !fillGrid.isAnim() && !fillGrid.isAdd()) {
+                LogUtils.d("答案格 使用中");
+                Rect r = new Rect(fillGrid.getAnswerRect().left + KeyBoardItemPadding, fillGrid.getAnswerRect().top + KeyBoardItemPadding
+                        , fillGrid.getAnswerRect().right - KeyBoardItemPadding, fillGrid.getAnswerRect().bottom - KeyBoardItemPadding);
+                mCanvas.drawBitmap(KeyBoardItemTouch, null, r, mFillGridPaint);
+                int textX = (int) (fillGrid.getAnswerRect().left + KeyBoardItemW / 2);
+                int textY = (int) (fillGrid.getAnswerRect().top + (KeyBoardItemW / 2 - ((mTextPaint.descent() + mTextPaint.ascent()))) - 0.5f);
+                LogUtils.d(" textX " + textX + ", textY" + textY);
+                mCanvas.drawText(keyWords.get(fillGrid.getAnswerIndex()).getContent(), textX, textY, mTextPaint);
+
+                //最重要的
+                fillGrid.setMove(true);//沒加上 會重疊
+            }
+            index++;
+        }
+
+        //鍵盤
+        drawKeyboard();
+    }
+
+    /**
+     * 鍵盤 touch
+     */
+    private void touchKeyBorad(MotionEvent event) {
+
+        LogUtils.d("touchKeyBorad");
+        keyBoardTouchIndex = getTouchKeyboardIndex(event);
+        if(keyBoardTouchIndex == -1) return;
+
+        keyboard k = keyWords.get(keyBoardTouchIndex);
+        if (k.getAction().equals(k.Action_Keyboard)) {
+                //keyboard
+                mKeyBoardCanvas.drawBitmap(KeyBoardItemTouch, null, k.getmDrawRect(), mKeyboardPaint);
+                int textX = (int) (k.getStartX() + (KeyBoardItemW / 2 - mTextPaint.measureText(k.getContent())) + 0.5f);
+                int textY = (int) (k.getStartY() + (KeyBoardItemW / 2 - ((mTextPaint.descent() + mTextPaint.ascent()))) - 0.5f);
+                mKeyBoardCanvas.drawText(k.getContent(), k.getStartX() + KeyBoardItemW / 2, textY, mTextPaint);
+
+        } else {
+            //back
+            mKeyBoardCanvas.drawBitmap(KeyboardItemBackTwo, null, k.getmDrawRect(), mKeyboardPaint);
+
+        }
+        postInvalidate();
+    }
+
+    //鍵盤 釋放 up
+    private void freedKeyBorad() {
+        LogUtils.d("freedKeyBorad");
+        if(keyBoardTouchIndex == -1) return;
+        keyboard k = keyWords.get(keyBoardTouchIndex);
+        if (k.getAction().equals(k.Action_Keyboard)) {
+            //keyboard
+            mKeyBoardCanvas.drawBitmap(KeyBoardItemNormal, null, k.getmDrawRect(), mKeyboardPaint);
+            int textX = (int) (k.getStartX() + (KeyBoardItemW / 2 - mTextPaint.measureText(k.getContent())) + 0.5f);
+            int textY = (int) (k.getStartY() + (KeyBoardItemW / 2 - ((mTextPaint.descent() + mTextPaint.ascent()))) - 0.5f);
+            mKeyBoardCanvas.drawText(k.getContent(), k.getStartX() + KeyBoardItemW / 2, textY, mTextPaint);
+
+        } else {
+            //back
+            mKeyBoardCanvas.drawBitmap(KeyboardItemBackOne, null, k.getmDrawRect(), mKeyboardPaint);
+
+        }
+        keyBoardTouchIndex = -1;//回歸預設
+        postInvalidate();
     }
 
     /**
      * touch down
      */
-    private void touchDown(MotionEvent event) {
+    private void touchDownKeyBoardArea(MotionEvent event) {
+        /**
+         * 事件參數初始
+         */
+        isAdd = false;
+        isBack = false;
         /**
          * 紀錄XY軸
          */
         touchX = event.getX();
         touchY = event.getY();
         /**
-         * 判斷點擊位置
+         * 取得現在的 down keyboard index
          */
-        int keyIndex = 0;
-        e:
-        for (keyboard k : keyWords) {
-            /**
-             * 點擊到 已經被使用過的按鍵位置 沒有作用
-             */
-            if (!k.isUse()) {
-                /**
-                 * 篩選並點擊到可以使用的按鍵位置
-                 * 紀錄位置 離開此迴圈
-                 */
-//                if (((k.getStartX() + KeyBoardItemW) - 0.5f > event.getX() && event.getX() >= (k.getStartX() + 0.5f))
-//                        && ((k.getStartY() + KeyBoardItemW) - 0.5f > event.getY() && event.getY() >= (k.getStartY() + 0.5f)))
-                if (k.getmDrawRect().contains((int)touchX,(int)touchY)) {
-                    LogUtils.d("content " + k.getContent());
-                    LogUtils.d("Action " + k.getAction());
-                    touchIndex = keyIndex;//暫時紀錄 index
-                    if (k.getAction().equals(k.Action_Back)) {
-                        /**
-                         * back
-                         */
-                        if (KeyBoardItemPreviousIndex == -1) {
-                            LogUtils.d("KeyBoardItemPreviousIndex " + KeyBoardItemPreviousIndex);
-                            /**
-                             * 不能退後
-                             */
-                        } else {
-                            /**
-                             * 可以退後 KeyBoardItemPreviousIndex 是上一個選擇的index
-                             */
-                            //答案退後一個
-                            LogUtils.d("isBack " + isBack);
-                            isBack = true;
-
-                        }
-                    } else {
-                        /**
-                         * 一般 按鍵
-                         * answerList size 已經填入多少答案
-                         * answerNonSpacelength 有多少格子可以填
-                         */
-                        //變更狀態 isAdd = true; canvas animate
-                        isAdd = true;
-                    }
-                    break e;
-                }
-            }
-            keyIndex++;
+        touchIndex = getTouchKeyboardIndex(event);
+        LogUtils.d("touchIndex: " + touchIndex);
+        /**
+         * 判斷事件
+         * 「使用過」「是否退回鍵」
+         */
+        if (touchIndex == -1) return;//無法比對
+        WeakReference<keyboard> mkeyboard = new WeakReference<keyboard>(keyWords.get(touchIndex));
+        if (mkeyboard.get() == null) return;//資料空 back
+        if (mkeyboard.get().isUse()) return; //已經使用過
+        /**
+         * 驗證back鍵
+         */
+        if (mkeyboard.get().getAction().equals(keyboard.Action_Back)) {
+            if (KeyBoardItemPreviousIndex == -1) return;//不能退後
+            //可以退後
+            isBack = true;
         }
-        LogUtils.d("isBack:" +isBack);
-        LogUtils.d("isAdd:" +isAdd);
+        /**
+         * 驗證一般按鍵
+         */
+        if (mkeyboard.get().getAction().equals(keyboard.Action_Keyboard)) {
+            //可以加載
+            isAdd = true;
+        }
+        LogUtils.d("isBack:" + isBack);
+        LogUtils.d("isAdd:" + isAdd);
     }
 
     /**
      * touch up
      */
-    private void touchUp(MotionEvent event) {
-        if (touchX != event.getX() && touchY != event.getY()) {
+    private void touchUpKeyBoardArea(MotionEvent event) {
+        /**
+         * check down up place is same?
+         */
+        int upIndex = getTouchKeyboardIndex(event);
+        if (touchIndex != upIndex) {
             LogUtils.d("座標不一致");
+            //回覆所有的按鍵狀態
+            drawKeyboard();
+            invalidate();
             return;
         }
+
         /**
          * 開始
          */
@@ -849,10 +1155,14 @@ public class SpellKeyBoard extends View {
      * @param keyIndex 需要變動的 keyindex
      */
     private void addAnswerMemory(int keyIndex) {
+        isLock = true; //動畫進行 禁止touch
         //暫存
         int fillIndex = fillGridUseNextIndex;//更換前的填入位置
         //更換狀態
-        keyWords.get(keyIndex).setUse(true);
+//        keyWords.get(keyIndex).setUse(true);
+        fillGrids.get(fillIndex).setUse(true);
+        LogUtils.d("填寫的格子 index :" + fillIndex);
+        LogUtils.d("填寫的格子 index use:" + fillGrids.get(fillIndex).isUse());
         //儲存答案
         if (answerList == null) answerList = new ArrayList<>();
         answerList.add(keyIndex);
@@ -863,7 +1173,7 @@ public class SpellKeyBoard extends View {
         /**
          * 如果檢查
          */
-        if(fillGridUseNextIndex != fillGrids.size() && fillGridUseNextIndex < fillGrids.size()) {
+        if (fillGridUseNextIndex != fillGrids.size() && fillGridUseNextIndex < fillGrids.size()) {
             while (fillGrids.get(fillGridUseNextIndex).getAction().equals("Space")) {
                 fillGridUseNextIndex++;
             }
@@ -876,13 +1186,34 @@ public class SpellKeyBoard extends View {
          * 繪製內容 含 動畫
          * 2.add fillGrid
          */
-        int x = fillGrids.get(fillIndex).getmDrawRect().left-2;
-        int y = fillGrids.get(fillIndex).getmDrawRect().top+2;
-        keyWords.get(keyIndex).setmDrawRectFill(fillGrids.get(fillIndex).getmDrawRect());//設定填滿位置
-        keyWords.get(keyIndex).setStartFillX(x);
-        keyWords.get(keyIndex).setStartFillY(y);
+        fillGrids.get(fillIndex).setAnswerRect(fillGrids.get(fillIndex).getmDrawRect());//設定填滿位置
+        fillGrids.get(fillIndex).setAnswerIndex(keyIndex);//設定填滿使用的答案按鍵index
+        fillGrids.get(fillIndex).setAnim(true);//設定為動畫執行
+        fillGrids.get(fillIndex).setAdd(true);//設定為填答動畫
+        fillGrids.get(fillIndex).setAnimStart(false);//設定尚未動畫初始
+        fillGrids.get(fillIndex).setLocusStartRect(keyWords.get(keyIndex).getmDrawRect());//設定繪製開始範圍
+        fillGrids.get(fillIndex).setLocusEndRect(fillGrids.get(fillIndex).getmDrawRect());//設定繪製結束範圍
+        LogUtils.d("填寫的格子 內容 :" + fillGrids.get(fillIndex).toString());
         //
         updateInvalidate();//重繪
+
+        /**
+         * todo 檢查是否已經回答結束
+         */
+//        LogUtils.d("answer list size :"+answerList.size());
+//        LogUtils.d("answerNonSpacelength :"+answerNonSpacelength);
+        if (answerList.size() == answerNonSpacelength) {
+            isLock = true;
+            //測試用 延遲三秒執行
+            postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    endAnswer();
+                }
+            }, 3000);
+
+        }
+
     }
 
     /**
@@ -891,17 +1222,32 @@ public class SpellKeyBoard extends View {
      * @param keyIndex 需要變動的 keyindex
      */
     private void removeAnswerMemory(int keyIndex) {
+        isLock = true; //動畫進行 禁止touch
+
+        if (fillGridUseNextIndex != 0) fillGridUseNextIndex--;
+        while (fillGrids.get(fillGridUseNextIndex).getAction().equals("Space")) {
+            fillGridUseNextIndex--;
+        }
         //更換狀態
-        keyWords.get(keyIndex).setUse(false);
+//        keyWords.get(keyIndex).setUse(false);
+        LogUtils.d("刪除的格子 內容1 :" + fillGrids.get(fillGridUseNextIndex).toString());
+        fillGrids.get(fillGridUseNextIndex).setUse(false);
+        //
+        fillGrids.get(fillGridUseNextIndex).setUse(false);
+        fillGrids.get(fillGridUseNextIndex).setAnim(true);
+        fillGrids.get(fillGridUseNextIndex).setClear(true);
+        fillGrids.get(fillGridUseNextIndex).setAnimStart(false);
+        fillGrids.get(fillGridUseNextIndex).setAnimFinished(false);
+        fillGrids.get(fillGridUseNextIndex).setPercentage(0f);
+        fillGrids.get(fillGridUseNextIndex).setLocusStartRect(fillGrids.get(fillGridUseNextIndex).getmDrawRect());
+        fillGrids.get(fillGridUseNextIndex).setLocusEndRect(keyWords.get(fillGrids.get(fillGridUseNextIndex).getAnswerIndex()).getmDrawRect());
+        //
+        LogUtils.d("刪除的格子 內容2 :" + fillGrids.get(fillGridUseNextIndex).toString());
         //刪除答案
         answerList.remove(answerList.size() - 1);//退回最新的一筆
         //更換退回 keyboard index
         KeyBoardItemPreviousIndex = answerList.size() == 0 ? -1 : answerList.get(answerList.size() - 1);
         //更換下一個 fillGrid index
-        if (fillGridUseNextIndex != 0) fillGridUseNextIndex--;
-        while (fillGrids.get(fillGridUseNextIndex).getAction().equals("Space")) {
-            fillGridUseNextIndex--;
-        }
         LogUtils.d("keyIndex: " + keyIndex);
         LogUtils.d("answerList size:" + answerList.size());
         LogUtils.d("KeyBoardItemPreviousIndex:" + KeyBoardItemPreviousIndex);
@@ -935,265 +1281,601 @@ public class SpellKeyBoard extends View {
      */
     private void fillGridAdd() {
         /**
-         *
+         * 判斷是否可以繼續答題
          */
-        isAdd = false;
-        /**
-         * 增加紀錄
-         */
-        if(answerList==null) answerList = new ArrayList<>();
+        if (answerList == null) answerList = new ArrayList<>();
         if (answerList.size() < answerNonSpacelength) {
+            /**
+             * 增加紀錄
+             */
             addAnswerMemory(touchIndex);
-        }else{
-            isAdd=false;//
+        } else {
+            isAdd = false;//
         }
 
     }
 
     /**
-     * 取得隨機 英文字 A~Z , a~z , ' -  [54個字母]
+     * 繪製鍵盤
+     */
+    private void drawKeyboard() {
+
+
+        int index = 0;
+        for (keyboard k : keyWords) {
+//            LogUtils.d("index:"+index+",rect"+k.getmDrawRect().toString());
+            /**
+             * 區分 back  and 一般
+             * 如果已經使用 use = true 在答案格上 [多]繪製
+             */
+            if (k.getAction().equals(keyboard.Action_Keyboard)) {
+                //一般鍵
+                mKeyBoardCanvas.drawBitmap(KeyBoardItemNormal, null, k.getmDrawRect(), mKeyboardPaint);
+                int textX = (int) (k.getStartX() + KeyBoardItemW / 2);
+                int textY = (int) (k.getStartY() + (KeyBoardItemW / 2 - ((mTextPaint.descent() + mTextPaint.ascent()))) - 0.5f);
+                mKeyBoardCanvas.drawText(k.getContent(), textX, textY, mTextPaint);
+            }
+            if (k.getAction().equals(keyboard.Action_Back)) {
+                //back
+                mKeyBoardCanvas.drawBitmap(KeyboardItemBackOne, null, k.getmDrawRect(), mKeyboardPaint);
+            }
+            //
+            index++;
+        }
+
+    }
+
+    /**
+     * 回傳現在觸碰到的位置 [index]
      *
-     * @param index
-     * @return
+     * @param event
+     * @return -1表示找不到
      */
-    private String getRandomEnglishChar(int index) {
-        switch (index) {
-            case 0:
-                return "A";
-            case 1:
-                return "B";
-            case 2:
-                return "C";
-            case 3:
-                return "D";
-            case 4:
-                return "E";
-            case 5:
-                return "F";
-            case 6:
-                return "G";
-            case 7:
-                return "H";
-            case 8:
-                return "I";
-            case 9:
-                return "J";
-            case 10:
-                return "K";
-            case 11:
-                return "L";
-            case 12:
-                return "M";
-            case 13:
-                return "N";
-            case 14:
-                return "O";
-            case 15:
-                return "P";
-            case 16:
-                return "Q";
-            case 17:
-                return "R";
-            case 18:
-                return "S";
-            case 19:
-                return "T";
-            case 20:
-                return "U";
-            case 21:
-                return "V";
-            case 22:
-                return "W";
-            case 23:
-                return "X";
-            case 24:
-                return "Y";
-            case 25:
-                return "Z";
-            case 26:
-                return "a";
-            case 27:
-                return "b";
-            case 28:
-                return "c";
-            case 29:
-                return "d";
-            case 30:
-                return "e";
-            case 31:
-                return "f";
-            case 32:
-                return "g";
-            case 33:
-                return "h";
-            case 34:
-                return "i";
-            case 35:
-                return "j";
-            case 36:
-                return "k";
-            case 37:
-                return "l";
-            case 38:
-                return "m";
-            case 39:
-                return "n";
-            case 40:
-                return "o";
-            case 41:
-                return "p";
-            case 42:
-                return "q";
-            case 43:
-                return "r";
-            case 44:
-                return "s";
-            case 45:
-                return "t";
-            case 46:
-                return "u";
-            case 47:
-                return "v";
-            case 48:
-                return "w";
-            case 49:
-                return "x";
-            case 50:
-                return "y";
-            case 51:
-                return "z";
-            case 52:
-                return "'";
-            case 53:
-                return "-";
-            default:
-                return "";
+    private int getTouchKeyboardIndex(MotionEvent event) {
+        int keyIndex = 0;
+        for (keyboard k : keyWords) {
+            //刪選點擊範圍
+            if (k.getmDrawRect().contains((int) event.getX(), (int) event.getY())) {
+                return keyIndex;
+            }
+            keyIndex++;
+        }
+        return -1;
+    }
+
+    /**
+     * 動畫 初始設定
+     */
+    private void initAnimateKeyboard(int longtime, final fillGrid fillGrid) {
+        /**
+         * 鍵盤填寫動畫
+         */
+        /**
+         * 設定動畫已經初始化
+         */
+        fillGrid.setAnimStart(true);
+        /**
+         * init
+         */
+        final ValueAnimator animator = ValueAnimator.ofInt(minAnimCode, maxAnimCode).setDuration(longtime);
+        OvershootInterpolator timeInterpolator = new OvershootInterpolator();
+        animator.setInterpolator(timeInterpolator);
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                /**
+                 * 計算動畫數值
+                 */
+                int value = (int) animation.getAnimatedValue();
+
+                /**
+                 * 設定動畫沒有結束
+                 */
+                fillGrid.setAnimFinished(false);
+                /**
+                 * 設定動畫數值
+                 */
+                fillGrid.setAnimateValue(value);
+                /**
+                 * 設定動畫執行百分比
+                 */
+                fillGrid.setPercentage(((float) fillGrid.getAnimateValue() / (float) maxAnimCode));
+                LogUtils.d("value: " + value);
+                LogUtils.d("Percentage: " + ((float) fillGrid.getAnimateValue() / (float) maxAnimCode));
+                /**
+                 * 刷新
+                 */
+                invalidate();
+            }
+        });
+        //判斷結束
+        animator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                super.onAnimationCancel(animation);
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                LogUtils.d("結束動畫");
+                LogUtils.d("動畫釋放");
+                animation.cancel();//釋放
+                LogUtils.d("設定狀態");
+                fillGrid.setAnimFinished(true);
+                LogUtils.d("動畫狀態：" + fillGrid.isAnimFinished());
+                invalidate();
+                LogUtils.d("重新刷新");
+                super.onAnimationEnd(animation);
+            }
+        });
+        animator.start();
+    }
+
+    /**
+     * 動畫 初始設定
+     */
+    private void initAnimatefillGrids(int longtime, final fillGrid fillGrid) {
+        /**
+         * 清除動畫
+         */
+
+        /**
+         * 設定動畫已經初始化
+         */
+        fillGrid.setAnimStart(true);
+
+
+        final ValueAnimator animator1 = ValueAnimator.ofInt(minAnimCode, maxAnimCode).setDuration(longtime);
+        Interpolator timeInterpolator = new AnticipateInterpolator();
+        animator1.setInterpolator(timeInterpolator);
+        animator1.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                /**
+                 * 計算動畫數值
+                 */
+                int value = (int) animation.getAnimatedValue();
+                /**
+                 * 設定動畫沒有結束
+                 */
+                fillGrid.setAnimFinished(false);
+                /**
+                 * 設定動畫數值
+                 */
+                fillGrid.setAnimateValue(value);
+                /**
+                 * 設定動畫執行百分比
+                 */
+                fillGrid.setPercentage(((float) fillGrid.getAnimateValue() / (float) maxAnimCode));
+                /**
+                 * 刷新
+                 */
+                invalidate();
+            }
+
+
+        });
+        //判斷結束
+        animator1.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+
+                super.onAnimationCancel(animation);
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                LogUtils.d("清除動畫釋放");
+                animation.cancel();//釋放
+                LogUtils.d("結束動畫1");
+                LogUtils.d("設定狀態1");
+                fillGrid.setAnimFinished(true);
+                LogUtils.d("動畫狀態1：" + fillGrid.isAnimFinished());
+                invalidate();
+                LogUtils.d("重新刷新1");
+                super.onAnimationEnd(animation);
+            }
+        });
+        animator1.start();
+    }
+
+    /**
+     * 找出多筆
+     */
+    private void fillGridAnim(Canvas canvas) {
+        LogUtils.d("篩選動作");
+        for (fillGrid f : fillGrids) {
+            if (f.isUse()) {
+                /**
+                 * isUse = true
+                 * 動態變更 [答案方格] 建立位置
+                 * isAnim = true && isAdd = true isAnimFinished = false 答題動畫 執行中
+                 * isAnim = false && isAdd = false isAnimFinished = true 答題動畫 結束
+                 */
+                if (f.isAnim() && f.isAdd()) {
+                    LogUtils.d("動畫循環 填答");
+                    //動態變更建立位置
+                    fillGridItemAnim(f, canvas);//
+                } else if (!f.isAnim() && !f.isAdd() && f.isAnimFinished() && !f.isMove()) {
+                    LogUtils.d("動畫結束 直接繪圖");
+                    //按鍵 使用中繪製
+                    Rect r = new Rect(f.getAnswerRect().left + KeyBoardItemPadding, f.getAnswerRect().top + KeyBoardItemPadding
+                            , f.getAnswerRect().right - KeyBoardItemPadding, f.getAnswerRect().bottom - KeyBoardItemPadding);
+                    mCanvas.drawBitmap(KeyBoardItemTouch, null, r, mFillGridPaint);
+                    int textX = (int) (f.getAnswerRect().left + KeyBoardItemW / 2);
+                    int textY = (int) (f.getAnswerRect().top + (KeyBoardItemW / 2 - ((mTextPaint.descent() + mTextPaint.ascent()))) - 0.5f);
+                    mCanvas.drawText(keyWords.get(f.getAnswerIndex()).getContent(), textX, textY, mTextPaint);
+                } else {
+                    LogUtils.d("其他");
+                    if (f.isMove()) {//回復狀態
+                        f.setMove(false);
+                    }
+                }
+            } else {
+                /**
+                 * isUse = false
+                 * 動態變更 清除
+                 * isAnim = true && isClear = true && isAnimFinished = false 答題動畫 執行中
+                 * isAnim = false && isAdd = false isAnimFinished = true 答題動畫 結束
+                 */
+                /**
+                 * isUse = true
+                 * 動態變更 [答案方格] 建立位置
+                 * isClear = false && isAnim = true 答題動畫
+                 * isClear = true && isAnim = true 清除動畫
+                 */
+                if (f.isAnim() && f.isClear()) {
+                    LogUtils.d("動畫循環 清除");
+                    fillGridItemClearAnim(f, canvas);
+                } else {
+                    //清除後 不做任何繪製
+                    LogUtils.d("動畫循環 清除 其他");
+                    LogUtils.d("f :" + f.toString());
+                }
+            }
+        }
+
+    }
+
+    /**
+     * 鍵盤填空動畫[個體]
+     */
+    private void fillGridItemAnim(fillGrid fillGrid, Canvas canvas) {
+        LogUtils.d("填答動畫");
+        LogUtils.d("原來的範圍: " + fillGrid.getLocusStartRect() + ",前往的範圍 Y: " + fillGrid.getLocusEndRect());
+        /**
+         * 測量距離
+         */
+        float disranceX = (fillGrid.getLocusStartRect().left - fillGrid.getLocusEndRect().left);
+        float disranceY = (fillGrid.getLocusStartRect().top - fillGrid.getLocusEndRect().top);
+//        LogUtils.d("需位移距離X: " + (int)disranceX + ",需位移距離Y: " + (int)disranceY);
+        /**
+         * 百分比
+         */
+        float percentage = fillGrid.getPercentage();
+//        LogUtils.d("percentage: "+percentage);
+
+        /**
+         * 計算要繪製的地點
+         */
+        float x = new BigDecimal(fillGrid.getLocusStartRect().left - disranceX * percentage)
+                .setScale(1, BigDecimal.ROUND_HALF_UP).floatValue();
+        float y = new BigDecimal(fillGrid.getLocusStartRect().top - disranceY * percentage)
+                .setScale(1, BigDecimal.ROUND_HALF_UP).floatValue();
+//        LogUtils.d("x: " + x + ",y: " + y);
+
+        Rect rect = new Rect((int) x + KeyBoardItemPadding, (int) y + KeyBoardItemPadding,
+                (int) (x + KeyBoardItemW) - KeyBoardItemPadding, (int) (y + KeyBoardItemH) - KeyBoardItemPadding);
+//        LogUtils.d("框架座標: "+rect.toString());
+        canvas.drawBitmap(KeyBoardItemTouch, null, rect, mFillGridPaint);
+        int textX = (int) (x + KeyBoardItemW / 2);
+        int textY = (int) (y + (KeyBoardItemW / 2 - ((mTextPaint.descent() + mTextPaint.ascent()))) - 0.5f);
+        canvas.drawText(keyWords.get(fillGrid.getAnswerIndex()).getContent(), textX, textY, mTextPaint);
+
+
+        LogUtils.d("動畫狀態：" + fillGrid.isAnimFinished());
+        if (fillGrid.isAnimFinished()) {
+            /**
+             * 狀態變化
+             * isAdd > false
+             * fillGrid [anim > false , add > false ,AnimFinished> false ]
+             * isLock > false
+             */
+            fillGrid.setAnim(false);
+            fillGrid.setAnimStart(false);
+            fillGrid.setAdd(false);
+            fillGrid.setPercentage(0f);
+            LogUtils.d("isUse: " + fillGrid.isUse() + ",isAnim: " + fillGrid.isAnim() + ",isAdd: " + fillGrid.isAdd() +
+                    "\n///getLocusStartRect" + fillGrid.getLocusStartRect() + "\n///getLocusEndRect" + fillGrid.getLocusEndRect());
+            /**
+             * 檢查所有的答案是否都回到原來的位置
+             * isOK
+             */
+            boolean isOK = true;
+            for (fillGrid f : fillGrids) {
+                LogUtils.d("isAdd: " + f.isAdd() + ",isAnim: " + f.isAnim());
+                if (f.isAdd() || f.isAnim()) {
+                    isOK = false;
+                }
+            }
+            /**
+             * 檢查完畢
+             */
+            if (isOK) {
+                LogUtils.d("解除綁定");
+                isAdd = false;
+                isLock = false;
+            }
+
+        }
+
+    }
+
+    /**
+     * 清除答案動畫[個體]
+     */
+    private void fillGridItemClearAnim(fillGrid fillGrid, Canvas canvas) {
+        LogUtils.d("清除動畫");
+        LogUtils.d("原來的範圍: " + fillGrid.getLocusStartRect() + ",前往的範圍 Y: " + fillGrid.getLocusEndRect());
+        /**
+         * 測量距離
+         */
+        float disranceX = (fillGrid.getLocusStartRect().left - fillGrid.getLocusEndRect().left);
+        float disranceY = (fillGrid.getLocusStartRect().top - fillGrid.getLocusEndRect().top);
+        LogUtils.d("需位移距離X: " + (int) disranceX + ",需位移距離Y: " + (int) disranceY);
+        /**
+         * 百分比
+         */
+        float percentage = fillGrid.getPercentage();
+        LogUtils.d("percentage: " + percentage);
+        /**
+         * 計算淡化程度
+         */
+        int alpha = (int) new BigDecimal(((float) 1 - percentage) * (float) 255).setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
+        mAnimPaint.setAlpha(alpha > 255 ? 255 : alpha);
+        LogUtils.d("alpha: " + alpha);
+        /**
+         * 計算要繪製的地點
+         */
+        float x = new BigDecimal(fillGrid.getLocusStartRect().left - disranceX * percentage)
+                .setScale(1, BigDecimal.ROUND_HALF_UP).floatValue();
+        float y = new BigDecimal(fillGrid.getLocusStartRect().top - disranceY * percentage)
+                .setScale(1, BigDecimal.ROUND_HALF_UP).floatValue();
+
+        Rect rect = new Rect((int) x, (int) y,
+                (int) (x + KeyBoardItemW), (int) (y + KeyBoardItemH));
+        canvas.drawBitmap(KeyBoardItemNormal, null, rect, mAnimPaint);
+        int textX = (int) (x + KeyBoardItemW / 2);
+        int textY = (int) (y + (KeyBoardItemW / 2 - ((mTextPaint.descent() + mTextPaint.ascent()))) - 0.5f);
+        canvas.drawText(keyWords.get(fillGrid.getAnswerIndex()).getContent(), textX, textY, mAnimPaint);
+        //
+
+        if (fillGrid.isAnimFinished()) {
+            LogUtils.d("清除結束");
+            /**
+             * 狀態變化
+             * isAdd > false
+             * fillGrid [anim > false , add > false ,AnimFinished> false ]
+             * isLock > false
+             * mFillGridPaint mTextPaint 畫筆alpha重新回到255
+             */
+            isClear = false;
+            fillGrid.setAnimStart(false);
+            fillGrid.setAnim(false);
+            fillGrid.setClear(false);
+            fillGrid.setPercentage(0f);
+            mAnimPaint.setAlpha(255);
+            LogUtils.d("getAlpha: " + mAnimPaint.getAlpha());
+
+            /**
+             * 檢查所有的答案是否都回到原來的位置
+             * isOK
+             */
+            boolean isOK = true;
+            for (fillGrid f : fillGrids) {
+                LogUtils.d("isAdd: " + f.isAdd() + ",isAnim: " + f.isAnim());
+                if (f.isAdd() || f.isAnim()) {
+                    isOK = false;
+                }
+            }
+            /**
+             * 檢查完畢
+             */
+            if (isOK) {
+                LogUtils.d("解除綁定");
+                isAdd = false;
+                isLock = false;
+            }
+
         }
     }
 
     /**
-     * 縮小圖示
+     * 結束答題
      */
-    private Bitmap scaleBitmap(Bitmap scaleBitmap, int itemHW) {
-        Bitmap b = scaleBitmap;
-        float scale;
-        LogUtils.d("itemHW:" + itemHW + " ,b.getWidth():" + b.getWidth());
-        LogUtils.d("itemHW:" + itemHW + " ,b.getHeight():" + b.getHeight());
-        float scalew = new BigDecimal((float) itemHW / (float) b.getWidth()).setScale(3, BigDecimal.ROUND_HALF_UP).floatValue();
-        float scaleH = new BigDecimal((float) itemHW / (float) b.getHeight()).setScale(3, BigDecimal.ROUND_HALF_UP).floatValue();
-        scale = scalew > scaleH ? scaleH : scalew;
-        Matrix matrix = new Matrix();
-        matrix.postScale(scale, scale); //长和宽放大缩小的比例
-        LogUtils.d("scale:" + scale);
-        Bitmap resizeBmp = Bitmap.createBitmap(b, 0, 0, b.getWidth(), b.getHeight(), matrix, true);
-        return resizeBmp;
-    }
+    private void endAnswer() {
+        StringBuffer b = new StringBuffer();
+        for (fillGrid f : fillGrids) {
+            if (!f.getAction().equals(fillGrid.Action_Space)) {
+                b.append(keyWords.get(f.getAnswerIndex()).getContent());
+            } else {
+                b.append(" ");
+            }
+        }
+        LogUtils.d("答案: " + b.toString());
+//        Toast.makeText(getContext(),"答案: "+b.toString(),Toast.LENGTH_SHORT).show();
+        /**
+         * 檢查答案是否正確
+         */
+        if (b.toString().equals(answer)) {
+            listener.answerCorrect(b.toString());
+            //todo clear測試
+            /**
+             * Use = false
+             * isAnim = true
+             * isClear = true
+             */
+            for (fillGrid f : fillGrids) {
+                f.setUse(false);
+                f.setAnim(true);
+                f.setClear(true);
+                f.setAnimStart(false);
+                f.setAnimFinished(false);
+                f.setPercentage(0f);
+                f.setLocusStartRect(f.getmDrawRect());
+                f.setLocusEndRect(keyWords.get(f.getAnswerIndex()).getmDrawRect());
+            }
+            isClear = true;
+            fillGridUseNextIndex = 0;
+            KeyBoardItemPreviousIndex = -1;
+            answerList.clear();
+            //重繪
+            updateInvalidate();
 
-    /**
-     * 字體自適應
-     */
-    private void setTextSizeForWidth(Paint paint, float desiredHeight) {
+        } else {
+            listener.answerError(b.toString());
+            isLock = false;
+        }
 
-        // Pick a reasonably large value for the test. Larger values produce
-        // more accurate results, but may cause problems with hardware
-        // acceleration. But there are workarounds for that, too; refer to
-        // http://stackoverflow.com/questions/6253528/font-size-too-large-to-fit-in-cache
-        final float testTextSize = 10f;
-
-        // Get the bounds of the text, using our testTextSize.
-        paint.setTextSize(testTextSize);
-        Rect bounds = new Rect();
-        paint.getTextBounds("n", 0, "n".length(), bounds);
-
-        // Calculate the desired size as a proportion of our testTextSize.
-        float desiredTextSize = testTextSize * desiredHeight / bounds.height() * 2 / 5;
-        LogUtils.d("desiredTextSize: " + desiredTextSize);
-
-        // Set the paint for that size.
-        paint.setTextSize(desiredTextSize);
     }
 
     /**
      * 更新
      */
-    public void updateInvalidate(){
+    public void updateInvalidate() {
         mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-
         /**
          * 建立格子資訊
          * (fillGridItemW/2)*spaceNum 空格
          */
-        fillGrids = new ArrayList<>();
         int index = 0;
-        int spaceNum = 0;
-        for (char c : answer.toCharArray()) {
-            final float x = new BigDecimal((float) fillGridMRL + (fillGridItemW / 2) * spaceNum +
-                    (((float) fillGridItemW + (fillGridItemSpace * 2)) * (float) index)).setScale(1, BigDecimal.ROUND_HALF_UP).floatValue() + 0.5f;
-            final float y = fillGridMTB;
-            fillGrid fillGrid = new fillGrid();
-            fillGrid.setContent(String.valueOf(c));
-            fillGrid.setStartX(x);
-            fillGrid.setStartX(y);
-            Rect r = new Rect((int) x, (int) y, (int) (x + fillGridItemW), (int) (y + fillGridItemH));
-            fillGrid.setmDrawRect(r);//放入繪製範圍
-            if (String.valueOf(c).equals(" ")) {
-                //空格資料
-                fillGrid.setAction(fillGrid.Action_Space);
-                spaceNum++;
-            } else {
-                //非空格資料
-                fillGrid.setAction(fillGrid.Action_Fillgrid);
-                mCanvas.drawBitmap(FillGridItemNormal, null, r, mFillGridPaint);
-                index++;
+        for (fillGrid fillGrid : fillGrids) {
+            /**
+             * 上答案格底圖
+             */
+            if (!fillGrid.getContent().equals(" ")) {
+                LogUtils.d("繪製 答案格 底圖");
+                mCanvas.drawBitmap(mType == 1 ? FillGridItemNormalType1 : FillGridItemNormalType2, null, fillGrid.getmDrawRect(), mFillGridPaint);
             }
-            fillGrids.add(fillGrid);
-
-        }
-
-        for (keyboard keyboard : keyWords) {
-//            LogUtils.d("keyWords: " + keyboard.toString());
-            if (keyboard.getmDrawRect() != null) {
-                WeakReference<Rect> rect = new WeakReference<Rect>(keyboard.getmDrawRect());
-                if (!keyboard.getAction().equals(keyboard.Action_Back)) {
+            /**
+             * 判斷 isUse 是使用過的 或是 沒有使用過的
+             */
+            if (fillGrid.isUse()) {
+                LogUtils.d("答案格 使用中");
+                /**
+                 * isAnim = true , isAdd = false 剛開始呼叫動畫線程 啟動
+                 */
+                if (fillGrid.isAnim() && fillGrid.isAdd() && !fillGrid.isAnimStart()) {
+                    LogUtils.d("填寫答案 動畫執行初始化");
+                    initAnimateKeyboard(animTime, fillGrid);
+                } else if (!fillGrid.isAnim() && !fillGrid.isAdd() && fillGrid.isAnimFinished()) {
                     /**
-                     * 如果已經使用 use = true
-                     * 不繪圖
-                     * 反向繪製
+                     * isAnim = false  , isAdd = false
+                     * 直接建立
                      */
-                    if (!keyboard.isUse()){
-                        mCanvas.drawBitmap(KeyBoardItemNormal, null, rect.get(), mKeyboardPaint);
-                        int textX = (int) (keyboard.getStartX() + (KeyBoardItemW / 2 - mTextPaint.measureText(keyboard.getContent())) + 0.5f);
-                        int textY = (int) (keyboard.getStartY() + (KeyBoardItemW / 2 - ((mTextPaint.descent() + mTextPaint.ascent()))) - 0.5f);
-//                        LogUtils.d(" textX " + textX + ", textY" + textY);
-                        mCanvas.drawText(keyboard.getContent(), keyboard.getStartX() + KeyBoardItemW / 2, textY, mTextPaint);
-                    }else{
-                        mCanvas.drawBitmap(KeyBoardItemNormal, null, keyboard.getmDrawRectFill(), mKeyboardPaint);
-                        int textX = (int) (keyboard.getStartFillX() + (KeyBoardItemW / 2 - mTextPaint.measureText(keyboard.getContent())) + 0.5f);
-                        int textY = (int) (keyboard.getStartFillY() + (KeyBoardItemW / 2 - ((mTextPaint.descent() + mTextPaint.ascent()))) - 0.5f);
-//                        LogUtils.d(" keyboard.getStartFillX() " + keyboard.getStartFillX() + ", keyboard.getStartFillY()" + keyboard.getStartFillY());
-//                        LogUtils.d(" KeyBoardItemW " + KeyBoardItemW + ", mTextPaint.measureText(keyboard.getContent()" + mTextPaint.measureText(keyboard.getContent()));
-//                        LogUtils.d(" mTextPaint.descent() " + mTextPaint.descent() + ", mTextPaint.ascent()" + mTextPaint.ascent());
-//                        LogUtils.d(" textX " + textX + ", textY" + textY);
-                        mCanvas.drawText(keyboard.getContent(), keyboard.getStartFillX() + KeyBoardItemW / 2, textY, mTextPaint);
-                    }
+                    LogUtils.d("動畫已經結束 直接繪製圖示");
+                    //padding
+                    Rect r = new Rect(fillGrid.getAnswerRect().left + KeyBoardItemPadding, fillGrid.getAnswerRect().top + KeyBoardItemPadding
+                            , fillGrid.getAnswerRect().right - KeyBoardItemPadding, fillGrid.getAnswerRect().bottom - KeyBoardItemPadding);
+                    mCanvas.drawBitmap(KeyBoardItemTouch, null, r, mFillGridPaint);
+                    int textX = (int) (fillGrid.getAnswerRect().left + KeyBoardItemW / 2);
+                    int textY = (int) (fillGrid.getAnswerRect().top + (KeyBoardItemW / 2 - ((mTextPaint.descent() + mTextPaint.ascent()))) - 0.5f);
+                    LogUtils.d(" textX " + textX + ", textY" + textY);
+                    mCanvas.drawText(keyWords.get(fillGrid.getAnswerIndex()).getContent(), textX, textY, mTextPaint);
                 } else {
-                    mCanvas.drawBitmap(KeyboardItemBackOne, null, rect.get(), mKeyboardPaint);
+                    LogUtils.d("其他");
+                    LogUtils.d("index: " + index + ",isAnimStart: " + fillGrid.isAnimStart());
+                    LogUtils.d("Add: " + fillGrid.isAdd() + ",isAnim: " + fillGrid.isAnim() + ",isAnimFinished: " + fillGrid.isAnimFinished());
                 }
-
+            } else {
+                LogUtils.d("答案格 解除使用");
+                /**
+                 * 清除答案
+                 * 設定
+                 * Use = false
+                 * isAnim = true
+                 * isClear = true
+                 * answerlist clear
+                 */
+                if (fillGrid.isAnim() && fillGrid.isClear() && !fillGrid.isAnimStart()) {
+                    LogUtils.d("清除答案 動畫執行設定");
+                    initAnimatefillGrids(animClearTime, fillGrid);
+                } else if (!fillGrid.isAnim() && !fillGrid.isClear() && fillGrid.isAnimFinished()) {
+                    LogUtils.d("動畫已經結束 直接繪製圖示");
+                } else {
+                    LogUtils.d("其他");
+                    LogUtils.d("index: " + index);
+                    LogUtils.d("isClear: " + fillGrid.isClear() + ",isAnim: " + fillGrid.isAnim() + ",isAnimFinished: " + fillGrid.isAnimFinished());
+                }
             }
+            index++;
         }
-
+        /**
+         * draw keyboard
+         */
+        drawKeyboard();
+        //
         invalidate();
     }
 
     /**
-     * 呼叫更新重繪
+     * 呼叫更新
      */
     public void updateKeyword() {
+        listener.update();
+        //清空畫布
         mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-        fillGridUseNextIndex = 0;//下一個使用的 作答格子 歸0
-        initKeyboardSize();
-        initFillGridSize();
+        //尚未有點擊需要退回的index [-1 = 沒有需要退回的index]
+        KeyBoardItemPreviousIndex = -1;
+        //下一個使用的 作答格子[紀錄] 歸0
+        fillGridUseNextIndex = 0;
+        //答案資料清空
+        answerList.clear();
+        //計算 佈局參數 「鍵盤、答案」
+        initViewSize();
+        //初始化鍵盤區
+        initKeyboard();
+        //初始化答題區
+        initFillGrid();
+        //刷新
         invalidate();
     }
+
+    /**
+     * callBack機制
+     */
+    public interface SpellKeyBoardListener {
+
+        /**
+         * 回答錯誤
+         *
+         * @param ErrorStr 錯誤答案
+         */
+        void answerError(String ErrorStr);
+
+        /**
+         * 回答正確
+         *
+         * @param CorrectStr 正確答案
+         */
+        void answerCorrect(String CorrectStr);
+
+        /**
+         * 成功建立
+         */
+        void alreadyEstablished();
+
+        /**
+         * 更新中
+         */
+        void update();
+
+        /**
+         * 更新失敗
+         */
+        void updateError();
+    }
+
+
 }

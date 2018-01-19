@@ -17,8 +17,11 @@
 
         <!--顯示項目 左右間距-->
         <attr name="fillGridPaddingRL" format="dimension" />
-        <!--鍵盤點擊的圖示-->
-        <attr name="normalFillGridItem" format="reference" />
+
+        <!--答案的底圖 1-->
+        <attr name="normalFillGridItemType1" format="reference" />
+        <!--答案的底圖 1-->
+        <attr name="normalFillGridItemType2" format="reference" />
 
     </declare-styleable>
 
