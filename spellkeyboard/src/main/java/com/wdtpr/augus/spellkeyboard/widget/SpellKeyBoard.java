@@ -62,6 +62,7 @@ public class SpellKeyBoard extends View {
     private int animClearTime = 700;//清除動畫時間 500毫秒
     private int maxAnimCode = 1000;//最大值
     private int minAnimCode = 0;//最小值
+    private int animateDelay = 2000;//作答結束[正確] 動畫延遲執行時間 預設2000[2秒]
 
     /**
      * 傳入版型 [1,2]
@@ -335,6 +336,7 @@ public class SpellKeyBoard extends View {
         int normalFillGridItemRID2 = mTypedArray.getResourceId(R.styleable.SpellKeyBoard_normalFillGridItemType2, R.drawable.fillgrid_type2);
         int KeyboardItemBackOneRID = mTypedArray.getResourceId(R.styleable.SpellKeyBoard_KeyboardItemBackOne, R.drawable.keyboard_back_normal);
         int KeyboardItemBackTwoRID = mTypedArray.getResourceId(R.styleable.SpellKeyBoard_KeyboardItemBackTwo, R.drawable.keyboard_back_press);
+        animateDelay =  mTypedArray.getInt(R.styleable.SpellKeyBoard_answerCorrectAnimateDelay, 2000);
         KeyBoardItemSpaceRL = mTypedArray.getDimension(R.styleable.SpellKeyBoard_KeyboardItemPadding, 10);
         KeyBoardItemSpaceTB = mTypedArray.getDimension(R.styleable.SpellKeyBoard_KeyboardItemPadding, 10);
         fillGridItemSpace = mTypedArray.getDimension(R.styleable.SpellKeyBoard_fillGridPaddingRL, 10);
@@ -1220,7 +1222,7 @@ public class SpellKeyBoard extends View {
                 public void run() {
                     endAnswer();
                 }
-            }, 2000);
+            }, animateDelay);
 
         }
 

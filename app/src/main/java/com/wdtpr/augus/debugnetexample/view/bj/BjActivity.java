@@ -27,7 +27,6 @@ public class BjActivity extends AppCompatActivity implements SpellKeyBoardListen
     private LearnRecordPresenter learnRecordPresenter;
 
     SpellKeyBoard mSpellKeyBoard;
-    SpellKeyBoard mSpellKeyBoard1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,7 +36,7 @@ public class BjActivity extends AppCompatActivity implements SpellKeyBoardListen
 
 
         //init
-        SpellKeyBoard mSpellKeyBoard = (SpellKeyBoard) findViewById(R.id.mSpellKeyBoard);
+        mSpellKeyBoard = (SpellKeyBoard) findViewById(R.id.mSpellKeyBoard);
         //set anwser
         mSpellKeyBoard.setAnswer("test");
         /**
@@ -47,9 +46,21 @@ public class BjActivity extends AppCompatActivity implements SpellKeyBoardListen
          */
         mSpellKeyBoard.setKeyBoardNum(24);
         /**
+         * 設定版型
+         */
+        mSpellKeyBoard.setmType(1);// 1:答案格藍底 2:答案格黃底
+        /**
          * 設定callback
          */
         mSpellKeyBoard.listener = this;
+
+        /**
+         * 更新方式
+         */
+//        mSpellKeyBoard.setAnswer("test");
+//        mSpellKeyBoard.setKeyBoardNum(24);
+//        mSpellKeyBoard.setmType(1);// 1:答案格藍底 2:答案格黃底
+//        mSpellKeyBoard.updateKeyword();//呼叫重繪
 
 
 
@@ -202,5 +213,9 @@ public class BjActivity extends AppCompatActivity implements SpellKeyBoardListen
     @Override
     public void answerCorrectAnimFinish() {
         LogUtils.d("答題成功 刪除動畫執行結束");
+        mSpellKeyBoard.setAnswer("how");
+        mSpellKeyBoard.setKeyBoardNum(24);
+        mSpellKeyBoard.setmType(1);// 1:答案格藍底 2:答案格黃底
+        mSpellKeyBoard.updateKeyword();//呼叫重繪
     }
 }

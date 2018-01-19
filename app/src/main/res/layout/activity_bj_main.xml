@@ -75,6 +75,7 @@
         app:KeyboardItemBackTwo="@drawable/keyboard_back_press"
         app:KeyboardItemPadding="15px"
         app:fillGridPaddingRL="2px"
+        app:answerCorrectAnimateDelay="3000"
         app:normalFillGridItemType1="@drawable/fillgrid_type1"
         app:normalFillGridItemType2="@drawable/fillgrid_type2"
         app:normalKeyboardItem="@drawable/keyboard_normal"
