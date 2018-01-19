@@ -15,12 +15,13 @@ import com.wdtpr.augus.bjprofile.bjDemo.presenter.LearnRecord.ILearnRecordContra
 import com.wdtpr.augus.bjprofile.bjDemo.presenter.LearnRecord.LearnRecordPresenter;
 import com.wdtpr.augus.debugnetexample.R;
 import com.wdtpr.augus.debugnetexample.base.Utils.LogUtils;
+import com.wdtpr.augus.spellkeyboard.model.listener.SpellKeyBoardListener;
 import com.wdtpr.augus.spellkeyboard.widget.SpellKeyBoard;
 
 import java.util.List;
 
 
-public class BjActivity extends AppCompatActivity {
+public class BjActivity extends AppCompatActivity implements SpellKeyBoardListener  {
 
 
     private LearnRecordPresenter learnRecordPresenter;
@@ -32,43 +33,27 @@ public class BjActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bj_main);
-        //
-        mSpellKeyBoard = (SpellKeyBoard) findViewById(R.id.mSpellKeyBoard);
-        mSpellKeyBoard.setAnswer("Shakespeare's Birthplace");
-//        mSpellKeyBoard.setAnswer("come on");
+
+
+
+        //init
+        SpellKeyBoard mSpellKeyBoard = (SpellKeyBoard) findViewById(R.id.mSpellKeyBoard);
+        //set anwser
+        mSpellKeyBoard.setAnswer("test");
+        /**
+         * set 按鍵數
+         * [count]<24 && [count]>=12 (需要3的倍數) ex 12,15,18,21
+         * [count]<=40 && [count]>=23(需要4的倍數) ex 24,28,32,36,40
+         */
         mSpellKeyBoard.setKeyBoardNum(24);
-//        mSpellKeyBoard.setKeyBoardNum(36);
-//        mSpellKeyBoard.setKeyBoardNum(40);
+        /**
+         * 設定callback
+         */
+        mSpellKeyBoard.listener = this;
 
-        mSpellKeyBoard.listener = new SpellKeyBoard.SpellKeyBoardListener() {
-            @Override
-            public void answerError(String ErrorStr) {
-                LogUtils.d("錯誤答案為："+ErrorStr);
-            }
 
-            @Override
-            public void answerCorrect(String CorrectStr) {
-                LogUtils.d("正確答案為："+CorrectStr);
-//                mSpellKeyBoard.setAnswer("money");//設定答案
-//                mSpellKeyBoard.setKeyBoardNum(24);//設定鍵盤數[size]
-//                mSpellKeyBoard.updateKeyword();//更新
-            }
 
-            @Override
-            public void alreadyEstablished() {
-                LogUtils.d("成功建立");
-            }
 
-            @Override
-            public void update() {
-                LogUtils.d("更新中");
-            }
-
-            @Override
-            public void updateError() {
-                LogUtils.d("更新錯誤");
-            }
-        };
 
 
 
@@ -169,5 +154,53 @@ public class BjActivity extends AppCompatActivity {
          */
 //        mSpellKeyBoard.unsubscribe();
 //        mSpellKeyBoard1.unsubscribe();
+    }
+
+
+
+
+
+
+    @Override
+    public void answerError(String ErrorStr) {
+        LogUtils.d("錯誤答案為："+ErrorStr);
+    }
+
+    @Override
+    public void answerCorrect(String CorrectStr) {
+        LogUtils.d("正確答案為："+CorrectStr);
+//                mSpellKeyBoard.setAnswer("money");//設定答案
+//                mSpellKeyBoard.setKeyBoardNum(24);//設定鍵盤數[size]
+//                mSpellKeyBoard.updateKeyword();//更新
+    }
+
+    @Override
+    public void alreadyEstablished() {
+        LogUtils.d("成功建立");
+    }
+
+    @Override
+    public void update() {
+        LogUtils.d("更新中");
+    }
+
+    @Override
+    public void updateError() {
+        LogUtils.d("更新錯誤");
+    }
+
+    @Override
+    public void alreadyBack() {
+        LogUtils.d("成功刪除");
+    }
+
+    @Override
+    public void alreadyAdd() {
+        LogUtils.d("成功新增");
+    }
+
+    @Override
+    public void answerCorrectAnimFinish() {
+        LogUtils.d("答題成功 刪除動畫執行結束");
     }
 }

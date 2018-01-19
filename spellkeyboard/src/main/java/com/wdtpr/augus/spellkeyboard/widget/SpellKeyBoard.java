@@ -9,7 +9,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
@@ -25,6 +24,7 @@ import android.view.animation.OvershootInterpolator;
 import com.wdtpr.augus.spellkeyboard.R;
 import com.wdtpr.augus.spellkeyboard.model.bean.fillGrid;
 import com.wdtpr.augus.spellkeyboard.model.bean.keyboard;
+import com.wdtpr.augus.spellkeyboard.model.listener.SpellKeyBoardListener;
 import com.wdtpr.augus.spellkeyboard.utils.BitmapUtils;
 import com.wdtpr.augus.spellkeyboard.utils.LogUtils;
 import com.wdtpr.augus.spellkeyboard.utils.TextUtils;
@@ -313,6 +313,11 @@ public class SpellKeyBoard extends View {
      * false 動畫結束 或是 不執行
      */
     private boolean isMove = false;
+    /**
+     * true 答題成功 動畫結束
+     * false 一般刪除答案
+     */
+    private boolean isFinish = false;
 
     public SpellKeyBoard(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -876,8 +881,6 @@ public class SpellKeyBoard extends View {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 LogUtils.d("ACTION_DOWN");
-                //touch
-                touchKeyBorad(event);
                 //
                 touchDownKeyBoardArea(event);
                 break;
@@ -1039,15 +1042,15 @@ public class SpellKeyBoard extends View {
 
         LogUtils.d("touchKeyBorad");
         keyBoardTouchIndex = getTouchKeyboardIndex(event);
-        if(keyBoardTouchIndex == -1) return;
+        if (keyBoardTouchIndex == -1) return;
 
         keyboard k = keyWords.get(keyBoardTouchIndex);
         if (k.getAction().equals(k.Action_Keyboard)) {
-                //keyboard
-                mKeyBoardCanvas.drawBitmap(KeyBoardItemTouch, null, k.getmDrawRect(), mKeyboardPaint);
-                int textX = (int) (k.getStartX() + (KeyBoardItemW / 2 - mTextPaint.measureText(k.getContent())) + 0.5f);
-                int textY = (int) (k.getStartY() + (KeyBoardItemW / 2 - ((mTextPaint.descent() + mTextPaint.ascent()))) - 0.5f);
-                mKeyBoardCanvas.drawText(k.getContent(), k.getStartX() + KeyBoardItemW / 2, textY, mTextPaint);
+            //keyboard
+            mKeyBoardCanvas.drawBitmap(KeyBoardItemTouch, null, k.getmDrawRect(), mKeyboardPaint);
+            int textX = (int) (k.getStartX() + (KeyBoardItemW / 2 - mTextPaint.measureText(k.getContent())) + 0.5f);
+            int textY = (int) (k.getStartY() + (KeyBoardItemW / 2 - ((mTextPaint.descent() + mTextPaint.ascent()))) - 0.5f);
+            mKeyBoardCanvas.drawText(k.getContent(), k.getStartX() + KeyBoardItemW / 2, textY, mTextPaint);
 
         } else {
             //back
@@ -1060,7 +1063,7 @@ public class SpellKeyBoard extends View {
     //鍵盤 釋放 up
     private void freedKeyBorad() {
         LogUtils.d("freedKeyBorad");
-        if(keyBoardTouchIndex == -1) return;
+        if (keyBoardTouchIndex == -1) return;
         keyboard k = keyWords.get(keyBoardTouchIndex);
         if (k.getAction().equals(k.Action_Keyboard)) {
             //keyboard
@@ -1155,7 +1158,14 @@ public class SpellKeyBoard extends View {
      * @param keyIndex 需要變動的 keyindex
      */
     private void addAnswerMemory(int keyIndex) {
-        isLock = true; //動畫進行 禁止touch
+        /**
+         * 呼叫點擊鍵盤一般按鈕
+         */
+        listener.alreadyAdd();
+        /**
+         * 鎖畫布
+         */
+        isLock = true;
         //暫存
         int fillIndex = fillGridUseNextIndex;//更換前的填入位置
         //更換狀態
@@ -1197,20 +1207,20 @@ public class SpellKeyBoard extends View {
         //
         updateInvalidate();//重繪
 
+
         /**
          * todo 檢查是否已經回答結束
          */
 //        LogUtils.d("answer list size :"+answerList.size());
 //        LogUtils.d("answerNonSpacelength :"+answerNonSpacelength);
-        if (answerList.size() == answerNonSpacelength) {
-            isLock = true;
+        if (answerList.size() == answerNonSpacelength && confirmCorrectAnswer()) {
             //測試用 延遲三秒執行
             postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     endAnswer();
                 }
-            }, 3000);
+            }, 2000);
 
         }
 
@@ -1222,7 +1232,15 @@ public class SpellKeyBoard extends View {
      * @param keyIndex 需要變動的 keyindex
      */
     private void removeAnswerMemory(int keyIndex) {
-        isLock = true; //動畫進行 禁止touch
+        /**
+         * 呼叫點擊鍵盤back按鈕
+         */
+        listener.alreadyBack();
+        /**
+         * 鎖畫布
+         */
+        isLock = true;
+
 
         if (fillGridUseNextIndex != 0) fillGridUseNextIndex--;
         while (fillGrids.get(fillGridUseNextIndex).getAction().equals("Space")) {
@@ -1688,13 +1706,27 @@ public class SpellKeyBoard extends View {
                 isLock = false;
             }
 
+            /**
+             * 答題正確後 動畫已經結束 的回傳
+             */
+            if(isFinish && isOK){
+                /**
+                 * 呼叫答題正確 全數刪除答案
+                 * callback answerCorrectAnimFinish 動畫結束
+                 */
+                listener.answerCorrectAnimFinish();
+                isFinish = false;
+            }
+
+
         }
     }
 
     /**
-     * 結束答題
+     * 檢查答題是否正確
+     * true 正確 false 錯誤
      */
-    private void endAnswer() {
+    private boolean confirmCorrectAnswer() {
         StringBuffer b = new StringBuffer();
         for (fillGrid f : fillGrids) {
             if (!f.getAction().equals(fillGrid.Action_Space)) {
@@ -1704,40 +1736,52 @@ public class SpellKeyBoard extends View {
             }
         }
         LogUtils.d("答案: " + b.toString());
-//        Toast.makeText(getContext(),"答案: "+b.toString(),Toast.LENGTH_SHORT).show();
         /**
          * 檢查答案是否正確
          */
         if (b.toString().equals(answer)) {
             listener.answerCorrect(b.toString());
-            //todo clear測試
-            /**
-             * Use = false
-             * isAnim = true
-             * isClear = true
-             */
-            for (fillGrid f : fillGrids) {
-                f.setUse(false);
-                f.setAnim(true);
-                f.setClear(true);
-                f.setAnimStart(false);
-                f.setAnimFinished(false);
-                f.setPercentage(0f);
-                f.setLocusStartRect(f.getmDrawRect());
-                f.setLocusEndRect(keyWords.get(f.getAnswerIndex()).getmDrawRect());
-            }
-            isClear = true;
-            fillGridUseNextIndex = 0;
-            KeyBoardItemPreviousIndex = -1;
-            answerList.clear();
-            //重繪
-            updateInvalidate();
-
+            return true;
         } else {
             listener.answerError(b.toString());
             isLock = false;
+            return false;
         }
+    }
 
+    /**
+     * 結束答題[落幕動畫]
+     */
+    public void endAnswer() {
+        /**
+         * 中途取消 答案數量不夠 不執行跳出
+         */
+        if (answerList.size() != answerNonSpacelength) return;
+        //鎖 繪製
+        isLock=true;
+        /**
+         * 設定動畫判斷參數
+         * Use = false
+         * isAnim = true
+         * isClear = true
+         */
+        for (fillGrid f : fillGrids) {
+            f.setUse(false);
+            f.setAnim(true);
+            f.setClear(true);
+            f.setAnimStart(false);
+            f.setAnimFinished(false);
+            f.setPercentage(0f);
+            f.setLocusStartRect(f.getmDrawRect());
+            f.setLocusEndRect(keyWords.get(f.getAnswerIndex()).getmDrawRect());
+        }
+        isClear = true;
+        isFinish = true;
+        fillGridUseNextIndex = 0;
+        KeyBoardItemPreviousIndex = -1;
+        answerList.clear();
+        //重繪
+        updateInvalidate();
     }
 
     /**
@@ -1841,41 +1885,5 @@ public class SpellKeyBoard extends View {
         //刷新
         invalidate();
     }
-
-    /**
-     * callBack機制
-     */
-    public interface SpellKeyBoardListener {
-
-        /**
-         * 回答錯誤
-         *
-         * @param ErrorStr 錯誤答案
-         */
-        void answerError(String ErrorStr);
-
-        /**
-         * 回答正確
-         *
-         * @param CorrectStr 正確答案
-         */
-        void answerCorrect(String CorrectStr);
-
-        /**
-         * 成功建立
-         */
-        void alreadyEstablished();
-
-        /**
-         * 更新中
-         */
-        void update();
-
-        /**
-         * 更新失敗
-         */
-        void updateError();
-    }
-
 
 }
