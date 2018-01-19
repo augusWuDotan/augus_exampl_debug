@@ -69,10 +69,10 @@
     <com.wdtpr.augus.spellkeyboard.widget.SpellKeyBoard
         android:id="@+id/mSpellKeyBoard"
         android:layout_width="match_parent"
-        android:layout_height="503px"
+        android:layout_height="600px"
         app:KeyboardItemBackOne="@drawable/keyboard_back_normal"
         app:KeyboardItemBackTwo="@drawable/keyboard_back_press"
-        app:KeyboardItemPadding="20px"
+        app:KeyboardItemPadding="5px"
         app:answerCorrectAnimateDelay="2000"
         app:fillGridPaddingRL="5px"
         app:normalFillGridItemType1="@drawable/fillgrid_type1"

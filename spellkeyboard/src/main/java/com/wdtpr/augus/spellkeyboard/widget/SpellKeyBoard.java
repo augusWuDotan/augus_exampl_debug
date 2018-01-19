@@ -111,7 +111,7 @@ public class SpellKeyBoard extends View {
     /**
      * 傳入的答案
      */
-    private String answer;
+    private String answer="";
     /**
      * 傳入的答案長度含空格
      */
@@ -130,15 +130,15 @@ public class SpellKeyBoard extends View {
     /**
      * 鍵盤按鍵數量
      */
-    private int KeyBoardNum = -1;
+    private int KeyBoardNum = 12;
     /**
      * 鍵盤有幾層
      */
-    private int KeyBoardLevelNum = -1;
+    private int KeyBoardLevelNum = 3;
     /**
      * 鍵盤每一層按鍵數量
      */
-    private int KeyBoardLevelCount = -1;
+    private int KeyBoardLevelCount = 4;
     /**
      * 鍵盤按鍵區域 寬度
      */
@@ -538,12 +538,14 @@ public class SpellKeyBoard extends View {
         LogUtils.d("鍵盤左右間距 int: " + (int) keyboardSpaceRL);
         /**
          * 鍵盤左右間距>50 重新設置 item左右間距
+         * (137 - 80) *2 = 114 總共多出來的部分
+         * 114/
          */
-        if (keyboardSpaceRL > 80 && KeyBoardLevelCount > 4) {
+        if (keyboardSpaceRL > 50 && KeyBoardLevelCount > 4) {
             LogUtils.d("鍵盤按鍵左右間距2: " + (int) KeyBoardItemSpaceRL);
-            KeyBoardItemSpaceRL += new BigDecimal(((keyboardSpaceRL - 80f) * 2 / ((float) KeyBoardLevelCount * 2f)) / 2 + 0.5f).setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
+            KeyBoardItemSpaceRL += new BigDecimal(((keyboardSpaceRL - 50f) * 2 / ((float) KeyBoardLevelCount * 2f)) + 0.5f).setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
             LogUtils.d("重新校正 鍵盤按鍵左右間距3: " + (int) KeyBoardItemSpaceRL);
-            keyboardSpaceRL = 80f;
+            keyboardSpaceRL = 50f;
         }
         //確定 鍵盤本身 上下間距 ([總長(KeyBoardH)] - ([共幾層(KeyBoardLevelNum)]*([鍵盤長寬(keyboardItemHW)]+[上下間距(KeyBoardItemSpaceTB)*2(兩邊各有1)])+左右間距(KeyBoardItemSpaceTB))/2
         float keyboardSpaceTB = new BigDecimal((((float) KeyBoardH - (((float) ((int) keyboardItemHW)) + (KeyBoardItemSpaceTB * 2)) * KeyBoardLevelNum) + KeyBoardItemSpaceTB) / 2 + 0.5f).setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
@@ -680,15 +682,22 @@ public class SpellKeyBoard extends View {
         /**
          * 建立比例
          */
-        float tdH = new BigDecimal((float) SpellKeyBoardW / (float) KeyBoardLevelCount)
-                .setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
-        float tdW = new BigDecimal((float) SpellKeyBoardH / (float) KeyBoardLevelNum)
-                .setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
-        float td = tdH > tdW ? tdW : tdH;//確定計算標準
-        fillAreaPercentage = new BigDecimal((float) td * 1.3f / (float) SpellKeyBoardH)
-                .setScale(3, BigDecimal.ROUND_HALF_UP).floatValue();
-        keyboardAreaPercentage = new BigDecimal(1f - fillAreaPercentage)
-                .setScale(3, BigDecimal.ROUND_HALF_UP).floatValue();
+//        float tdW = new BigDecimal((float) SpellKeyBoardW / (float) KeyBoardLevelCount)
+//                .setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
+//        float tdH = new BigDecimal((float) SpellKeyBoardH / (float) KeyBoardLevelNum)
+//                .setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
+//        float td = tdH > tdW ? tdW : tdH;//確定計算標準
+//        LogUtils.d("td  " + "tdH:" + String.valueOf(tdH) + " ,tdW:" + String.valueOf(tdW));
+//        fillAreaPercentage = new BigDecimal((float) td * 2f / (float) SpellKeyBoardH)
+//                .setScale(3, BigDecimal.ROUND_HALF_UP).floatValue();
+//        keyboardAreaPercentage = new BigDecimal(1f - fillAreaPercentage)
+//                .setScale(3, BigDecimal.ROUND_HALF_UP).floatValue();
+        fillAreaPercentage = 0.3f;
+        keyboardAreaPercentage = 0.7f;
+        /**
+         * fillAreaPercentage < 0.3 =
+         */
+
         LogUtils.d("Percentage " + "fillAreaPercentage:" + String.valueOf(fillAreaPercentage) +
                 " ,keyboardAreaPercentage:" + String.valueOf(keyboardAreaPercentage));
         /**
