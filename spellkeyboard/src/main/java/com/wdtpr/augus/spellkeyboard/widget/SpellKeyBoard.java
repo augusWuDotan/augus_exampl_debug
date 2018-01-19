@@ -791,8 +791,10 @@ public class SpellKeyBoard extends View {
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        listener.update();
+
     }
+
+
 
     //view 被回收怎樣處理
     @Override
@@ -1869,7 +1871,6 @@ public class SpellKeyBoard extends View {
      * 呼叫更新
      */
     public void updateKeyword() {
-        listener.update();
         //清空畫布
         mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
         //尚未有點擊需要退回的index [-1 = 沒有需要退回的index]
@@ -1886,6 +1887,8 @@ public class SpellKeyBoard extends View {
         initFillGrid();
         //刷新
         invalidate();
+        //
+        listener.update();
     }
 
 }
