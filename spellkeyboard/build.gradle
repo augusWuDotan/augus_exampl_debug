@@ -3,7 +3,7 @@ apply plugin: 'com.github.dcendents.android-maven'
 
 android {
     compileSdkVersion 26
-    group = 'com.example'
+    group = 'com.augus.Spellkeyboard'
     version = '1.0.1'
 
 

@@ -1,2 +1,2 @@
 include ':app', ':bjprofile', ':spellkeyboard'
-rootProject.name = 'spellkeyboard'
+rootProject.name = 'test'
