@@ -209,16 +209,24 @@ public class BjActivity extends AppCompatActivity implements SpellKeyBoardListen
     public void answerCorrectAnimFinish() {
         LogUtils.d("答題成功 刪除動畫執行結束");
         Random r = new Random();
-        int index = r.nextInt(2);
-        if(index == 0){
+        int index = r.nextInt(3);
+        if(index == 2){
             mSpellKeyBoard.setAnswer("augus");
             mSpellKeyBoard.setKeyBoardNum(12);
             mSpellKeyBoard.setmType(2);// 1:答案格藍底 2:答案格黃底
+            mSpellKeyBoard.setKeyBoardItemPadding(5);//設定 答案格 的 按鍵 內縮多少
             mSpellKeyBoard.updateKeyword();//呼叫重繪
-        }else{
+        }else if(index == 1){
             mSpellKeyBoard.setAnswer("how");
             mSpellKeyBoard.setKeyBoardNum(24);
             mSpellKeyBoard.setmType(1);// 1:答案格藍底 2:答案格黃底
+            mSpellKeyBoard.setKeyBoardItemPadding(3);
+            mSpellKeyBoard.updateKeyword();//呼叫重繪
+        }else{
+            mSpellKeyBoard.setAnswer("Name");
+            mSpellKeyBoard.setKeyBoardNum(12);
+            mSpellKeyBoard.setmType(2);// 1:答案格藍底 2:答案格黃底
+            mSpellKeyBoard.setKeyBoardItemPadding(5);
             mSpellKeyBoard.updateKeyword();//呼叫重繪
         }
 

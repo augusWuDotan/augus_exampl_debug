@@ -164,7 +164,7 @@ public class SpellKeyBoard extends View {
     /**
      * 填答案 偏移量
      */
-    private int KeyBoardItemPadding = 3;
+    private int KeyBoardItemPadding = 5;
     /**
      * keyboard touch index
      */
@@ -391,6 +391,10 @@ public class SpellKeyBoard extends View {
         this.KeyBoardLevelCount = KeyBoardNum / KeyBoardLevelNum;//總數量 / 幾層 = 每一層幾個
         LogUtils.d("設定幾層: " + KeyBoardLevelNum);
         LogUtils.d("設定每一層的鍵盤數: " + KeyBoardLevelCount);
+    }
+
+    public void setKeyBoardItemPadding(int keyBoardItemPadding) {
+        KeyBoardItemPadding = keyBoardItemPadding;
     }
 
     /**
@@ -672,7 +676,7 @@ public class SpellKeyBoard extends View {
          */
         SpellKeyBoardW = right;
         SpellKeyBoardH = bottom;
-        LogUtils.d("View 長寬： " + "長=" + SpellKeyBoardW + " ,寬=" + SpellKeyBoardH);
+        LogUtils.d("View 長寬： " + "高=" + SpellKeyBoardH + " ,寬=" +SpellKeyBoardW);
         /**
          * 建立比例
          */
@@ -1891,7 +1895,7 @@ public class SpellKeyBoard extends View {
         //下一個使用的 作答格子[紀錄] 歸0
         fillGridUseNextIndex = 0;
         //答案資料清空
-        answerList.clear();
+        if(answerList!= null)answerList.clear();
         //計算 佈局參數 「鍵盤、答案」
         initViewSize();
         //初始化鍵盤區
