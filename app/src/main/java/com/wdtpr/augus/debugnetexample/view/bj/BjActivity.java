@@ -36,25 +36,25 @@ public class BjActivity extends AppCompatActivity implements SpellKeyBoardListen
 
 
 //        //init
-//        mSpellKeyBoard = (SpellKeyBoard) findViewById(R.id.mSpellKeyBoard);
-//        //set anwser
-//        mSpellKeyBoard.setAnswer("test");
-//        /**
-//         * set 按鍵數
-//         * [count]<24 && [count]>=12 (需要3的倍數) ex 12,15,18,21
-//         * [count]<=40 && [count]>=23(需要4的倍數) ex 24,28,32,36,40
-//         */
-//        mSpellKeyBoard.setKeyBoardNum(24);
-//        /**
-//         * 設定版型
-//         */
-//        mSpellKeyBoard.setmType(1);// 1:答案格藍底 2:答案格黃底
-//        /**
-//         * 設定callback
-//         */
-//        mSpellKeyBoard.listener = this;
-//
-//        mSpellKeyBoard.setKeyBoardItemPadding(3);
+        mSpellKeyBoard = (SpellKeyBoard) findViewById(R.id.mSpellKeyBoard);
+        //set anwser
+        mSpellKeyBoard.setAnswer("aaaaaa bbbbbb");
+        /**
+         * set 按鍵數
+         * [count]<24 && [count]>=12 (需要3的倍數) ex 12,15,18,21
+         * [count]<=40 && [count]>=23(需要4的倍數) ex 24,28,32,36,40
+         */
+        mSpellKeyBoard.setKeyBoardNum(24);
+        /**
+         * 設定版型
+         */
+        mSpellKeyBoard.setmType(2);// 1:答案格藍底 2:答案格黃底
+        /**
+         * 設定callback
+         */
+        mSpellKeyBoard.listener = this;
+
+        mSpellKeyBoard.setKeyBoardItemPadding(3);
         /**
          * 更新方式
          */

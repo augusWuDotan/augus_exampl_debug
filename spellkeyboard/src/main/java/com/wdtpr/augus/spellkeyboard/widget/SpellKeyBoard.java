@@ -59,7 +59,8 @@ public class SpellKeyBoard extends View {
      * AccelerateDecelerateInterpolator 加速 - 減速
      */
     private int animTime = 500;//填寫答案動畫時間500毫秒
-    private int animClearTime = 700;//清除動畫時間 500毫秒
+    private int animClearTime = 300;//清除動畫時間 300毫秒
+    private int animAllClearTime = 500;//清除動畫時間 300毫秒
     private int maxAnimCode = 1000;//最大值
     private int minAnimCode = 0;//最小值
     private int animateDelay = 2000;//作答結束[正確] 動畫延遲執行時間 預設2000[2秒]
@@ -111,7 +112,7 @@ public class SpellKeyBoard extends View {
     /**
      * 傳入的答案
      */
-    private String answer="";
+    private String answer = "";
     /**
      * 傳入的答案長度含空格
      */
@@ -222,12 +223,14 @@ public class SpellKeyBoard extends View {
      * fillGridMinX最小值
      * fillGridCanScroll 是否可滑動
      * fillGridMoveNum 可以移動 [預設 + ]
+     * fillGridXOffset = x偏移量 [答題或是退回 偏移量]
      */
     private float fillGridMaxX;
     private float fillGridMinX;
     private float fillGridMoveNum;
     private boolean fillGridCanScroll;
-
+    private float fillGridXOffset = 0;
+    private boolean fillGridXDirection = false; // false 向左 // true 向右
 
     /**
      * 按鍵 寬度
@@ -295,6 +298,9 @@ public class SpellKeyBoard extends View {
      */
     private int touchIndex;
 
+    /**
+     * 是否鎖住畫布 touch = false , draw = false
+     */
     private boolean isLock = false;
     /**
      * 是否啟動 退後鍵
@@ -313,7 +319,7 @@ public class SpellKeyBoard extends View {
      * true 開始繪製 移動動畫
      * false 動畫結束 或是 不執行
      */
-    private boolean isMove = false;
+    private boolean isMove = true;
     /**
      * true 答題成功 動畫結束
      * false 一般刪除答案
@@ -336,7 +342,7 @@ public class SpellKeyBoard extends View {
         int normalFillGridItemRID2 = mTypedArray.getResourceId(R.styleable.SpellKeyBoard_normalFillGridItemType2, R.drawable.fillgrid_type2);
         int KeyboardItemBackOneRID = mTypedArray.getResourceId(R.styleable.SpellKeyBoard_KeyboardItemBackOne, R.drawable.keyboard_back_normal);
         int KeyboardItemBackTwoRID = mTypedArray.getResourceId(R.styleable.SpellKeyBoard_KeyboardItemBackTwo, R.drawable.keyboard_back_press);
-        animateDelay =  mTypedArray.getInt(R.styleable.SpellKeyBoard_answerCorrectAnimateDelay, 2000);
+        animateDelay = mTypedArray.getInt(R.styleable.SpellKeyBoard_answerCorrectAnimateDelay, 2000);
         KeyBoardItemSpaceRL = mTypedArray.getDimension(R.styleable.SpellKeyBoard_KeyboardItemPadding, 10);
         KeyBoardItemSpaceTB = mTypedArray.getDimension(R.styleable.SpellKeyBoard_KeyboardItemPadding, 10);
         fillGridItemSpace = mTypedArray.getDimension(R.styleable.SpellKeyBoard_fillGridPaddingRL, 10);
@@ -482,33 +488,53 @@ public class SpellKeyBoard extends View {
          */
 
         /**
-         * 計算圖示縮小比例
+         * 圖示 縮小或是放大
          */
+        scaleMatrix();
+        /**
+         * 取得鍵盤按鍵內容
+         * setKeyboardWord 設定內容
+         */
+        setKeyboardWord();
+        /**
+         * 建立
+         * setKeyBoardItemSize [設定座標]
+         */
+        keyWords = keyBoardModel.setKeyBoardItemSize(keyWords, KeyBoardLevelCount, KeyBoardMRL,
+                KeyBoardMTB, KeyBoardItemSpaceRL, KeyBoardItemSpaceTB, KeyBoardItemW, fillGridH, KeyBoardItemH);
+        /**
+         * [繪製過程]
+         */
+        keyBoardModel.drawKeyBoard(keyWords, mKeyBoardCanvas, KeyBoardItemW, KeyBoardItemNormal, KeyboardItemBackOne, mKeyboardPaint, mTextPaint);
+
+    }
+
+    /**
+     * 初始化圖示 scale [縮小或是放大]
+     */
+    private void scaleMatrix() {
         KeyBoardItemNormal = BitmapUtils.scaleBitmap(KeyBoardItemNormal, KeyBoardItemH);
         KeyBoardItemTouch = BitmapUtils.scaleBitmap(KeyBoardItemTouch, KeyBoardItemH);
         FillGridItemNormalType1 = BitmapUtils.scaleBitmap(FillGridItemNormalType1, KeyBoardItemH);
         FillGridItemNormalType2 = BitmapUtils.scaleBitmap(FillGridItemNormalType2, KeyBoardItemH);
         KeyboardItemBackOne = BitmapUtils.scaleBitmap(KeyboardItemBackOne, KeyBoardItemH);
         KeyboardItemBackTwo = BitmapUtils.scaleBitmap(KeyboardItemBackTwo, KeyBoardItemH);
-
-        /**
-         * 取得鍵盤按鍵內容
-         * getKeyboardWord 設定內容
-         * setKeyBoardItemSize [設定座標][繪製]
-         */
-        keyWords = workFilterModel.getKeyboardWord(answer, KeyBoardNum, KeyBoardLevelCount);
-        keyWords = keyBoardModel.setKeyBoardItemSize(keyWords, mCanvas, KeyBoardLevelCount, KeyBoardMRL,
-                KeyBoardMTB, KeyBoardItemSpaceRL, KeyBoardItemSpaceTB, KeyBoardItemW, fillGridH, KeyBoardItemH,
-                KeyBoardItemNormal, KeyboardItemBackOne, mKeyboardPaint, mTextPaint);
-
     }
+
+    /**
+     * 建立鍵盤內容[文字]
+     */
+    private void setKeyboardWord() {
+        keyWords = workFilterModel.getKeyboardWord(answer, KeyBoardNum, KeyBoardLevelCount);
+    }
+
 
     /**
      * 答案欄建立
      */
     private void initFillGrid() {
-        fillGrids = fillGridModel.setFillGridItemSize(answer, mCanvas, mFillGridPaint, mType, FillGridItemNormalType1,
-                FillGridItemNormalType2, fillGridMRL, fillGridItemW, fillGridItemSpace, fillGridMTB, fillGridItemH);
+        fillGrids = fillGridModel.setFillGridItemSizeAndDraw(answer, mFillGridCanvas, mFillGridPaint, mType, FillGridItemNormalType1,
+                FillGridItemNormalType2, fillGridMRL, fillGridItemW, fillGridItemSpace, fillGridMTB, fillGridItemH, 0);
     }
 
     /**
@@ -642,18 +668,29 @@ public class SpellKeyBoard extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         LogUtils.d("onDraw");
+        if (mKeyBoardBitmap != null) {
+            canvas.drawBitmap(mKeyBoardBitmap, 0, 0, null);//鍵盤
+        }
+        if (mFillGridBitmap != null) {
+            canvas.drawBitmap(mFillGridBitmap, 0, 0, null);//答題
+        }
         if (mBitmap != null) {
             canvas.drawBitmap(mBitmap, 0, 0, null);//底圖
-            canvas.drawBitmap(mFillGridBitmap, 0, 0, null);//答題
-            canvas.drawBitmap(mKeyBoardBitmap, 0, 0, null);//鍵盤
-            if (isMove) {
-                moveFillGrid();
-            } else {
-                fillGridAnim(canvas);//檢查有沒有答題動畫|清除動畫;
-            }
-        } else {
-            LogUtils.d("mBitmap null");
         }
+
+
+//        if (mBitmap != null) {
+//            if (isMove) {
+//                moveFillGrid();
+//            } else {
+//                fillGridAnim(canvas);//檢查有沒有答題動畫|清除動畫;
+//            }
+//            canvas.drawBitmap(mBitmap, 0, 0, null);//底圖
+//            canvas.drawBitmap(mFillGridBitmap, 0, 0, null);//答題
+//            canvas.drawBitmap(mKeyBoardBitmap, 0, 0, null);//鍵盤
+//        } else {
+//            LogUtils.d("mBitmap null");
+//        }
     }
 
     @Override
@@ -678,7 +715,7 @@ public class SpellKeyBoard extends View {
          */
         SpellKeyBoardW = right;
         SpellKeyBoardH = bottom;
-        LogUtils.d("View 長寬： " + "高=" + SpellKeyBoardH + " ,寬=" +SpellKeyBoardW);
+        LogUtils.d("View 長寬： " + "高=" + SpellKeyBoardH + " ,寬=" + SpellKeyBoardW);
         /**
          * 建立比例
          */
@@ -755,18 +792,7 @@ public class SpellKeyBoard extends View {
         LogUtils.d("event.getY():" + event.getY());
         LogUtils.d("getAction: " + event.getAction());
         LogUtils.d("isLock: " + isLock);
-        //Lock 防呆
-        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            //防呆 避免動畫結束 還沒解除lock
-            boolean isOK = true;
-            for (fillGrid f : fillGrids) {
-                if (f.isAnim() && f.isAnimFinished()) {
-                    LogUtils.d("還有還沒結束 :" + f);
-                }
-            }
-            if (isOK) isLock = false;
-            LogUtils.d("isLock: " + isLock);
-        }
+
         //一般touch判斷
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
@@ -790,9 +816,6 @@ public class SpellKeyBoard extends View {
              * 答案區域
              */
             LogUtils.d("答案區");
-            if (isLock) {
-                return !isLock;
-            }
             /**
              * 紀錄座標
              */
@@ -824,15 +847,15 @@ public class SpellKeyBoard extends View {
     public void unsubscribe() {
         LogUtils.d("清除資訊");
         //
-        if(keyBoardModel != null){
+        if (keyBoardModel != null) {
             keyBoardModel.unsubscribe();
             keyBoardModel = null;
         }
-        if(fillGridModel != null){
+        if (fillGridModel != null) {
             fillGridModel.unsubscribe();
             fillGridModel = null;
         }
-        if(workFilterModel != null){
+        if (workFilterModel != null) {
             workFilterModel.unsubscribe();
             workFilterModel = null;
         }
@@ -908,6 +931,8 @@ public class SpellKeyBoard extends View {
      * 鍵盤區 KeyBoardArea touch
      */
     private void touchKeyBoardArea(MotionEvent event) {
+        if(isLock) return;
+
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 LogUtils.d("ACTION_DOWN");
@@ -931,16 +956,35 @@ public class SpellKeyBoard extends View {
      */
     private void touchFillGridArea(MotionEvent event) {
         /**
-         * 判斷前先防呆 如果down落點 在keyboardRect
+         * 判斷前先防呆 如果down落點 在keyboardRect return
+         * isMove  = false return
          */
         if (keyBoardRect.contains((int) touchX, (int) touchY)) return;
-
+        if(!isMove) return;
+        /**
+         *
+         */
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                LogUtils.d("ACTION_DOWN 現在的偏移量：" + fillGridMoveNum);
-                isMove = true;
                 break;
             case MotionEvent.ACTION_MOVE:
+                if (isLock) {
+                    LogUtils.d("鎖");
+
+                    //防呆 避免動畫結束 還沒解除lock
+                    boolean isOK = true;
+                    for (fillGrid f : fillGrids) {
+                        if (f.isAnim() && !f.isAnimFinished()) {
+                            LogUtils.d("還有還沒結束 :" + f);
+                        }
+                    }
+                    if (isOK) isLock = false;
+                    LogUtils.d("防呆解鎖 isLock: " + isLock);
+
+                }
+                LogUtils.d("沒鎖");
+
+                LogUtils.d("ACTION_DOWN 現在的偏移量：" + fillGridMoveNum);
                 float x = new BigDecimal(touchX - event.getX()).setScale(0, BigDecimal.ROUND_HALF_DOWN).floatValue();
                 LogUtils.d("X位移：" + x);
                 float y = new BigDecimal(touchY - event.getY()).setScale(0, BigDecimal.ROUND_HALF_DOWN).floatValue();
@@ -955,18 +999,17 @@ public class SpellKeyBoard extends View {
                     Rect rect = fillGrids.get(fillGrids.size() - 1).getmDrawRect();
                     if (rect.right > (SpellKeyBoardW - fillGridMRL)) {
                         //表示可以繼續左滑
-                        if ((rect.right - x) > (SpellKeyBoardW - fillGridMRL)) {
+                        if ((rect.right - (x * 2)) > (SpellKeyBoardW - fillGridMRL)) {
                             //足夠的滑動空間 do null 不改變
-                            LogUtils.d("不改變 " + x);
+                            LogUtils.d("不改變 " + (x * 2));
+                            x = x * 2;
                         } else {
                             //不足夠的滑動空間 重新設定 x = [目前的x座標 - (總寬-答題區左右間距)]
                             x = rect.right - (SpellKeyBoardW - fillGridMRL);
                             LogUtils.d("改變 " + x);
                         }
                     } else {
-                        LogUtils.d("不動");
-                        //不能滑動
-
+                        LogUtils.d("不動");//不能滑動
                         return;
                     }
                 } else {
@@ -975,8 +1018,9 @@ public class SpellKeyBoard extends View {
                     Rect rect = fillGrids.get(0).getmDrawRect();
                     if (rect.left < fillGridMRL) {
                         //表示可以繼續右滑
-                        if ((rect.left - x) < fillGridMRL) {
+                        if ((rect.left - (x * 2)) < fillGridMRL) {
                             //足夠的滑動空間 do null 不改變
+                            x = x * 2;
                             LogUtils.d("不改變 " + x);
                         } else {
                             //不足夠的滑動空間 重新設定 x = [目前的x座標 - (總寬-答題區左右間距)]
@@ -986,12 +1030,12 @@ public class SpellKeyBoard extends View {
                     } else {
                         //不能滑動
                         LogUtils.d("不動");
-                        isMove = false;
                         return;
                     }
 
                 }
                 LogUtils.d("ACTION_MOVE 現在的偏移量：" + x);
+                mFillGridCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
                 /**
                  * 繪製移動
                  */
@@ -1003,33 +1047,31 @@ public class SpellKeyBoard extends View {
                     Rect DrawRect = new Rect((int) xOffset_l, currentRect.top, (int) xOffset_r, currentRect.bottom);
                     LogUtils.d("DrawRect:" + DrawRect);
                     f.setmDrawRect(DrawRect);
+                    drawFillGridItem(f.getmDrawRect(), f.getAction());
                     /**
                      * 答案格使用中
                      */
                     if (f.isUse()) {
                         f.setAnswerRect(DrawRect);
+                        drawFillGridItem(f.getmDrawRect(), mFillGridPaint, mTextPaint, f.getAction(), keyWords.get(f.getAnswerIndex()).getContent());
                     }
                 }
                 invalidate();
                 break;
             case MotionEvent.ACTION_UP:
-                isMove = false;
                 break;
             case MotionEvent.ACTION_CANCEL:
-                isMove = false;
                 break;
         }
 
 
     }
 
-    //測試移動效果
-
     /**
      *
      */
     private void moveFillGrid() {
-        mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+        mFillGridCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
         //
         int index = 0;
         for (fillGrid fillGrid : fillGrids) {
@@ -1038,7 +1080,7 @@ public class SpellKeyBoard extends View {
              */
             if (!fillGrid.getContent().equals(" ")) {
                 LogUtils.d("繪製 答案格 底圖");
-                mCanvas.drawBitmap(mType == 1 ? FillGridItemNormalType1 : FillGridItemNormalType2, null, fillGrid.getmDrawRect(), mFillGridPaint);
+                mFillGridCanvas.drawBitmap(mType == 1 ? FillGridItemNormalType1 : FillGridItemNormalType2, null, fillGrid.getmDrawRect(), mFillGridPaint);
             }
             LogUtils.d(" isUse " + fillGrid.isUse() + ", isAnim" + fillGrid.isAnim() + ", isAdd" + fillGrid.isAdd());
             /**
@@ -1049,11 +1091,11 @@ public class SpellKeyBoard extends View {
                 LogUtils.d("答案格 使用中");
                 Rect r = new Rect(fillGrid.getAnswerRect().left + KeyBoardItemPadding, fillGrid.getAnswerRect().top + KeyBoardItemPadding
                         , fillGrid.getAnswerRect().right - KeyBoardItemPadding, fillGrid.getAnswerRect().bottom - KeyBoardItemPadding);
-                mCanvas.drawBitmap(KeyBoardItemTouch, null, r, mFillGridPaint);
+                mFillGridCanvas.drawBitmap(KeyBoardItemTouch, null, r, mFillGridPaint);
                 int textX = (int) (fillGrid.getAnswerRect().left + KeyBoardItemW / 2);
                 int textY = (int) (fillGrid.getAnswerRect().top + (KeyBoardItemW / 2 - ((mTextPaint.descent() + mTextPaint.ascent()))) - 0.5f);
                 LogUtils.d(" textX " + textX + ", textY" + textY);
-                mCanvas.drawText(keyWords.get(fillGrid.getAnswerIndex()).getContent(), textX, textY, mTextPaint);
+                mFillGridCanvas.drawText(keyWords.get(fillGrid.getAnswerIndex()).getContent(), textX, textY, mTextPaint);
 
                 //最重要的
                 fillGrid.setMove(true);//沒加上 會重疊
@@ -1085,7 +1127,6 @@ public class SpellKeyBoard extends View {
         } else {
             //back
             mKeyBoardCanvas.drawBitmap(KeyboardItemBackTwo, null, k.getmDrawRect(), mKeyboardPaint);
-
         }
         postInvalidate();
     }
@@ -1195,14 +1236,48 @@ public class SpellKeyBoard extends View {
         /**
          * 鎖畫布
          */
-        isLock = true;
+        LogUtils.d("ADD 綁定");
         //暫存
         int fillIndex = fillGridUseNextIndex;//更換前的填入位置
         //更換狀態
-//        keyWords.get(keyIndex).setUse(true);
         fillGrids.get(fillIndex).setUse(true);
         LogUtils.d("填寫的格子 index :" + fillIndex);
         LogUtils.d("填寫的格子 index use:" + fillGrids.get(fillIndex).isUse());
+
+        /**
+         * 檢查範圍 如果填寫的格子right 超過(最大X座標-答案區左右間距)
+         * 變更所有 的 答案座標 x軸 偏移量 [填寫格子的 原始範圍 right x座標] - [最大X座標-答案區左右間距]]
+         */
+        LogUtils.d("MRL:" + fillGridMRL);
+        if (fillGrids.get(fillIndex).getmDrawRect().right > (SpellKeyBoardW - fillGridMRL)) {
+            /**
+             * x偏移量 fillGridXOffset
+             * 方向 fillGridXDirection false 向左 -
+             */
+            fillGridXOffset = (int) new BigDecimal((float) fillGrids.get(fillIndex).getmDrawRect().right - (float) (SpellKeyBoardW - fillGridMRL)).setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
+            LogUtils.d("需求位移比對 rect:" + fillGrids.get(fillIndex).getmDrawRect());
+            LogUtils.d("add X需求 偏移量" + (int) fillGridXOffset);
+            fillGridXDirection = false;
+            //
+            Rect endRect = new Rect(fillGrids.get(fillIndex).getmDrawRect().left - (int) fillGridXOffset, fillGrids.get(fillIndex).getmDrawRect().top,
+                    fillGrids.get(fillIndex).getmDrawRect().right - (int) fillGridXOffset, fillGrids.get(fillIndex).getmDrawRect().bottom);
+            LogUtils.d("重新建立 rect:" + endRect);
+        } else {
+            if (fillGrids.get(0).getmDrawRect().left < (fillGridMRL)) {
+                /**
+                 * x偏移量 fillGridXOffset
+                 * 方向 fillGridXDirection true 向右 +
+                 */
+                float x = new BigDecimal((float) fillGridMRL - (float) fillGrids.get(0).getmDrawRect().left).setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
+                LogUtils.d("需求位移比對 rect:" + fillGrids.get(0).getmDrawRect());
+                LogUtils.d("add X需求 偏移量:" + (int) x);
+                fillGridXDirection = true;
+                //
+                Rect endRect = new Rect(fillGrids.get(fillGridUseNextIndex).getmDrawRect().left + (int) x, fillGrids.get(fillGridUseNextIndex).getmDrawRect().top,
+                        fillGrids.get(fillGridUseNextIndex).getmDrawRect().right + (int) x, fillGrids.get(fillGridUseNextIndex).getmDrawRect().bottom);
+                LogUtils.d("重新建立 rect:" + endRect);
+            }
+        }
         //儲存答案
         if (answerList == null) answerList = new ArrayList<>();
         answerList.add(keyIndex);
@@ -1231,12 +1306,16 @@ public class SpellKeyBoard extends View {
         fillGrids.get(fillIndex).setAnim(true);//設定為動畫執行
         fillGrids.get(fillIndex).setAdd(true);//設定為填答動畫
         fillGrids.get(fillIndex).setAnimStart(false);//設定尚未動畫初始
+        fillGrids.get(fillIndex).setAnimFinished(false);//動畫執行尚未結束
         fillGrids.get(fillIndex).setLocusStartRect(keyWords.get(keyIndex).getmDrawRect());//設定繪製開始範圍
         fillGrids.get(fillIndex).setLocusEndRect(fillGrids.get(fillIndex).getmDrawRect());//設定繪製結束範圍
         LogUtils.d("填寫的格子 內容 :" + fillGrids.get(fillIndex).toString());
-        //
-        updateInvalidate();//重繪
 
+        //重繪
+        initAnimateKeyboard(animTime, fillGrids.get(fillIndex), fillIndex);
+//        if(fillGridXOffset != 0){
+//            initAnimateOne(animTime, fillGrids.get(fillIndex));
+//        }
 
         /**
          * todo 檢查是否已經回答結束
@@ -1244,7 +1323,11 @@ public class SpellKeyBoard extends View {
 //        LogUtils.d("answer list size :"+answerList.size());
 //        LogUtils.d("answerNonSpacelength :"+answerNonSpacelength);
         if (answerList.size() == answerNonSpacelength && confirmCorrectAnswer()) {
-            //測試用 延遲三秒執行
+            /**
+             * 鎖
+             */
+            isLock = true;
+            //測試用 預設延遲三秒執行
             postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -1269,15 +1352,54 @@ public class SpellKeyBoard extends View {
         /**
          * 鎖畫布
          */
-        isLock = true;
+        LogUtils.d("CLear 綁定");
 
 
         if (fillGridUseNextIndex != 0) fillGridUseNextIndex--;
         while (fillGrids.get(fillGridUseNextIndex).getAction().equals("Space")) {
             fillGridUseNextIndex--;
         }
-        //更換狀態
-//        keyWords.get(keyIndex).setUse(false);
+
+        /**
+         * 檢查範圍 如果填寫的格子 left 小於 (答案區左右間距)
+         * 變更所有 的 答案座標 x軸 偏移量 [答案區左右間距] - [填寫格子的 原始範圍 left x座標]
+         */
+        LogUtils.d("MRL:" + fillGridMRL);
+        int OffsetIndex = fillGridUseNextIndex;
+        if (fillGridUseNextIndex != 0) {
+            OffsetIndex = fillGridUseNextIndex - 1;//多退一格
+        }
+        /**
+         *
+         */
+        if (fillGrids.get(OffsetIndex).getmDrawRect().left < (fillGridMRL)) {
+            /**
+             * x 偏移量
+             */
+            fillGridXOffset = new BigDecimal((float) fillGridMRL - (float) fillGrids.get(OffsetIndex).getmDrawRect().left).setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
+            LogUtils.d("需求位移比對 rect:" + fillGrids.get(OffsetIndex).getmDrawRect());
+            LogUtils.d("clear X需求 偏移量:" + (int) fillGridXOffset);
+            fillGridXDirection = true;
+            Rect endRect = new Rect(fillGrids.get(OffsetIndex).getmDrawRect().left - (int) fillGridXOffset, fillGrids.get(OffsetIndex).getmDrawRect().top,
+                    fillGrids.get(OffsetIndex).getmDrawRect().right - (int) fillGridXOffset, fillGrids.get(OffsetIndex).getmDrawRect().bottom);
+            LogUtils.d("重新建立的 rect:" + endRect);
+        } else {
+            if (fillGrids.get(OffsetIndex).getmDrawRect().right > (SpellKeyBoardW - fillGridMRL)) {
+                /**
+                 * x偏移量 fillGridXOffset
+                 * 方向 fillGridXDirection false 向左 -
+                 */
+                fillGridXOffset = (int) new BigDecimal((float) fillGrids.get(OffsetIndex).getmDrawRect().right - (float) (SpellKeyBoardW - fillGridMRL)).setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
+                LogUtils.d("需求位移比對 rect:" + fillGrids.get(OffsetIndex).getmDrawRect());
+                LogUtils.d("clear X需求 偏移量" + (int) fillGridXOffset);
+                fillGridXDirection = false;
+                //
+                Rect endRect = new Rect(fillGrids.get(OffsetIndex).getmDrawRect().left - (int) fillGridXOffset, fillGrids.get(OffsetIndex).getmDrawRect().top,
+                        fillGrids.get(OffsetIndex).getmDrawRect().right - (int) fillGridXOffset, fillGrids.get(OffsetIndex).getmDrawRect().bottom);
+                LogUtils.d("重新建立 rect:" + endRect);
+            }
+        }
+
         LogUtils.d("刪除的格子 內容1 :" + fillGrids.get(fillGridUseNextIndex).toString());
         fillGrids.get(fillGridUseNextIndex).setUse(false);
         //
@@ -1300,11 +1422,12 @@ public class SpellKeyBoard extends View {
         LogUtils.d("answerList size:" + answerList.size());
         LogUtils.d("KeyBoardItemPreviousIndex:" + KeyBoardItemPreviousIndex);
         LogUtils.d("fillGridUseNextIndex:" + fillGridUseNextIndex);
-        /**
-         * 繪製內容 含 動畫
-         * 2.remove fillGrid
+
+        /*
+         * 重繪
          */
-        updateInvalidate();//重繪
+//        updateInvalidate();//重繪
+        initAnimatefillGrids(animClearTime, fillGrids.get(fillGridUseNextIndex), fillGridUseNextIndex);
     }
 
     /**
@@ -1394,7 +1517,7 @@ public class SpellKeyBoard extends View {
     /**
      * 動畫 初始設定
      */
-    private void initAnimateKeyboard(int longtime, final fillGrid fillGrid) {
+    private void initAnimateKeyboard(int longtime, final fillGrid fillGrid, final int index) {
         /**
          * 鍵盤填寫動畫
          */
@@ -1403,14 +1526,23 @@ public class SpellKeyBoard extends View {
          */
         fillGrid.setAnimStart(true);
         /**
-         * init
+         * 如果同時間 答案格有偏移量 必須先設定
          */
+        for (fillGrid f : fillGrids) {
+            LogUtils.d("修正前 end: " + f.getLocusEndRect());
+            Rect end = fillGridXDirection ? new Rect(f.getmDrawRect().left + (int) fillGridXOffset, f.getmDrawRect().top, f.getmDrawRect().right + (int) fillGridXOffset, f.getmDrawRect().bottom)
+                    : new Rect(f.getmDrawRect().left - (int) fillGridXOffset, f.getmDrawRect().top, f.getmDrawRect().right - (int) fillGridXOffset, f.getmDrawRect().bottom);
+            LogUtils.d("修正後 end: " + end);
+            f.setLocusEndRect(end);
+        }
+
         final ValueAnimator animator = ValueAnimator.ofInt(minAnimCode, maxAnimCode).setDuration(longtime);
         OvershootInterpolator timeInterpolator = new OvershootInterpolator();
         animator.setInterpolator(timeInterpolator);
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
+//                mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
                 /**
                  * 計算動畫數值
                  */
@@ -1431,6 +1563,10 @@ public class SpellKeyBoard extends View {
                 LogUtils.d("value: " + value);
                 LogUtils.d("Percentage: " + ((float) fillGrid.getAnimateValue() / (float) maxAnimCode));
                 /**
+                 * 繪製 答案格 偏移
+                 */
+                fillGridItemAnim(fillGrid, mFillGridCanvas, index);
+                /**
                  * 刷新
                  */
                 invalidate();
@@ -1440,19 +1576,33 @@ public class SpellKeyBoard extends View {
         animator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationCancel(Animator animation) {
+                LogUtils.d("cancle");
+                fillGrid.setAnimFinished(true);
                 super.onAnimationCancel(animation);
             }
 
             @Override
             public void onAnimationEnd(Animator animation) {
                 LogUtils.d("結束動畫");
+                /**
+                 * 結束時 設定
+                 */
+                for (fillGrid f : fillGrids) {
+                    f.setmDrawRect(f.getLocusEndRect());
+                }
+                //
+                fillGridXOffset = 0;
+                //
                 LogUtils.d("動畫釋放");
                 animation.cancel();//釋放
                 LogUtils.d("設定狀態");
                 fillGrid.setAnimFinished(true);
                 LogUtils.d("動畫狀態：" + fillGrid.isAnimFinished());
-                invalidate();
+                /**
+                 * 刷新
+                 */
                 LogUtils.d("重新刷新");
+                invalidate();
                 super.onAnimationEnd(animation);
             }
         });
@@ -1460,12 +1610,26 @@ public class SpellKeyBoard extends View {
     }
 
     /**
-     * 動畫 初始設定
+     * 單一clear 動畫 初始設定
      */
-    private void initAnimatefillGrids(int longtime, final fillGrid fillGrid) {
+    private void initAnimatefillGrids(int longtime, final fillGrid fillGrid, final int index) {
         /**
          * 清除動畫
          */
+
+        /**
+         * 如果同時間 答案格有偏移量 必須先設定
+         */
+        for (fillGrid f : fillGrids) {
+            LogUtils.d("修正前 end: " + f.getLocusEndRect());
+            Rect end = fillGridXDirection
+                    ?
+                    new Rect(f.getmDrawRect().left + (int) fillGridXOffset, f.getmDrawRect().top, f.getmDrawRect().right + (int) fillGridXOffset, f.getmDrawRect().bottom)
+                    :
+                    new Rect(f.getmDrawRect().left - (int) fillGridXOffset, f.getmDrawRect().top, f.getmDrawRect().right - (int) fillGridXOffset, f.getmDrawRect().bottom);
+            LogUtils.d("修正後 end: " + end);
+            f.setLocusEndRect(end);
+        }
 
         /**
          * 設定動畫已經初始化
@@ -1496,100 +1660,131 @@ public class SpellKeyBoard extends View {
                  */
                 fillGrid.setPercentage(((float) fillGrid.getAnimateValue() / (float) maxAnimCode));
                 /**
+                 * 繪製 答案格 偏移
+                 */
+                fillGridItemClearAnim(fillGrid, mFillGridCanvas, index);
+                /**
                  * 刷新
                  */
                 invalidate();
             }
-
 
         });
         //判斷結束
         animator1.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationCancel(Animator animation) {
-
-
+                LogUtils.d("cancle");
+                fillGrid.setAnimFinished(true);
                 super.onAnimationCancel(animation);
             }
 
             @Override
             public void onAnimationEnd(Animator animation) {
+                fillGridXOffset = 0;
+                for (fillGrid f : fillGrids) {
+                    f.setmDrawRect(f.getLocusEndRect());
+                }
+                fillGridItemClearAnim(fillGrid, mFillGridCanvas, index);
                 LogUtils.d("清除動畫釋放");
                 animation.cancel();//釋放
                 LogUtils.d("結束動畫1");
                 LogUtils.d("設定狀態1");
                 fillGrid.setAnimFinished(true);
                 LogUtils.d("動畫狀態1：" + fillGrid.isAnimFinished());
-                invalidate();
                 LogUtils.d("重新刷新1");
+                invalidate();
                 super.onAnimationEnd(animation);
             }
+
+            @Override
+            public void onAnimationEnd(Animator animation, boolean isReverse) {
+                LogUtils.d("onAnimationEnd");
+            }
         });
+
         animator1.start();
     }
 
     /**
-     * 找出多筆
+     * clear 動畫 初始設定
      */
-    private void fillGridAnim(Canvas canvas) {
-        LogUtils.d("篩選動作");
-        for (fillGrid f : fillGrids) {
-            if (f.isUse()) {
-                /**
-                 * isUse = true
-                 * 動態變更 [答案方格] 建立位置
-                 * isAnim = true && isAdd = true isAnimFinished = false 答題動畫 執行中
-                 * isAnim = false && isAdd = false isAnimFinished = true 答題動畫 結束
-                 */
-                if (f.isAnim() && f.isAdd()) {
-                    LogUtils.d("動畫循環 填答");
-                    //動態變更建立位置
-                    fillGridItemAnim(f, canvas);//
-                } else if (!f.isAnim() && !f.isAdd() && f.isAnimFinished() && !f.isMove()) {
-                    LogUtils.d("動畫結束 直接繪圖");
-                    //按鍵 使用中繪製
-                    Rect r = new Rect(f.getAnswerRect().left + KeyBoardItemPadding, f.getAnswerRect().top + KeyBoardItemPadding
-                            , f.getAnswerRect().right - KeyBoardItemPadding, f.getAnswerRect().bottom - KeyBoardItemPadding);
-                    mCanvas.drawBitmap(KeyBoardItemTouch, null, r, mFillGridPaint);
-                    int textX = (int) (f.getAnswerRect().left + KeyBoardItemW / 2);
-                    int textY = (int) (f.getAnswerRect().top + (KeyBoardItemW / 2 - ((mTextPaint.descent() + mTextPaint.ascent()))) - 0.5f);
-                    mCanvas.drawText(keyWords.get(f.getAnswerIndex()).getContent(), textX, textY, mTextPaint);
-                } else {
-                    LogUtils.d("其他");
-                    if (f.isMove()) {//回復狀態
-                        f.setMove(false);
-                    }
-                }
-            } else {
-                /**
-                 * isUse = false
-                 * 動態變更 清除
-                 * isAnim = true && isClear = true && isAnimFinished = false 答題動畫 執行中
-                 * isAnim = false && isAdd = false isAnimFinished = true 答題動畫 結束
-                 */
-                /**
-                 * isUse = true
-                 * 動態變更 [答案方格] 建立位置
-                 * isClear = false && isAnim = true 答題動畫
-                 * isClear = true && isAnim = true 清除動畫
-                 */
-                if (f.isAnim() && f.isClear()) {
-                    LogUtils.d("動畫循環 清除");
-                    fillGridItemClearAnim(f, canvas);
-                } else {
-                    //清除後 不做任何繪製
-                    LogUtils.d("動畫循環 清除 其他");
-                    LogUtils.d("f :" + f.toString());
-                }
-            }
-        }
+    private void initAnimatefillGridsClearAll(int longtime) {
+        /**
+         * 清除全部動畫
+         * 1.計算偏移量
+         */
 
+        /**
+         * x偏移量 fillGridXOffset
+         * 方向 fillGridXDirection false 向左
+         */
+        fillGridXOffset = (int) new BigDecimal((float) fillGridMRL - (float) fillGrids.get(0).getmDrawRect().left).setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
+        fillGridXDirection = false;
+        LogUtils.d("fillGridXOffset:" + fillGridXOffset);
+
+
+        final ValueAnimator animator2 = ValueAnimator.ofInt(minAnimCode, maxAnimCode).setDuration(longtime);
+        Interpolator timeInterpolator = new AnticipateInterpolator();
+        animator2.setInterpolator(timeInterpolator);
+        animator2.addUpdateListener(new ValueAnimator.AnimatorUpdateListener()
+
+        {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                /**
+                 * 計算動畫數值
+                 */
+                int value = (int) animation.getAnimatedValue();
+                /**
+                 * 繪製 答案格 偏移
+                 */
+                fillGridItemClearAllAnim(mFillGridCanvas, fillGridXOffset, (float) value / (float) maxAnimCode);
+                /**
+                 * 刷新
+                 */
+                invalidate();
+            }
+
+        });
+        //判斷結束
+        animator2.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                LogUtils.d("cancle");
+                super.onAnimationCancel(animation);
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                LogUtils.d("結束動畫1");
+                fillGridXOffset = 0;
+                mAnimPaint.setAlpha(255);
+                fillGrids = fillGridModel.setFillGridItemSizeAndDraw(answer, mFillGridCanvas, mFillGridPaint, mType, FillGridItemNormalType1,
+                        FillGridItemNormalType2, fillGridMRL, fillGridItemW, fillGridItemSpace, fillGridMTB, fillGridItemH, 0);
+                fillGridItemClearAllAnim(mFillGridCanvas, 0, 1);
+                LogUtils.d("清除動畫釋放");
+                animation.cancel();//釋放
+                LogUtils.d("重新刷新1");
+                invalidate();
+                super.onAnimationEnd(animation);
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation, boolean isReverse) {
+                LogUtils.d("onAnimationEnd");
+            }
+        });
+
+        animator2.start();
     }
+
 
     /**
      * 鍵盤填空動畫[個體]
      */
-    private void fillGridItemAnim(fillGrid fillGrid, Canvas canvas) {
+    private void fillGridItemAnim(fillGrid fillGrid, Canvas canvas, int index) {
+        mFillGridCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
         LogUtils.d("填答動畫");
         LogUtils.d("原來的範圍: " + fillGrid.getLocusStartRect() + ",前往的範圍 Y: " + fillGrid.getLocusEndRect());
         /**
@@ -1611,19 +1806,48 @@ public class SpellKeyBoard extends View {
                 .setScale(1, BigDecimal.ROUND_HALF_UP).floatValue();
         float y = new BigDecimal(fillGrid.getLocusStartRect().top - disranceY * percentage)
                 .setScale(1, BigDecimal.ROUND_HALF_UP).floatValue();
-//        LogUtils.d("x: " + x + ",y: " + y);
 
-        Rect rect = new Rect((int) x + KeyBoardItemPadding, (int) y + KeyBoardItemPadding,
-                (int) (x + KeyBoardItemW) - KeyBoardItemPadding, (int) (y + KeyBoardItemH) - KeyBoardItemPadding);
-//        LogUtils.d("框架座標: "+rect.toString());
-        canvas.drawBitmap(KeyBoardItemTouch, null, rect, mFillGridPaint);
-        int textX = (int) (x + KeyBoardItemW / 2);
-        int textY = (int) (y + (KeyBoardItemW / 2 - ((mTextPaint.descent() + mTextPaint.ascent()))) - 0.5f);
-        canvas.drawText(keyWords.get(fillGrid.getAnswerIndex()).getContent(), textX, textY, mTextPaint);
+        int inner = 0;
+        for (fillGrid f : fillGrids) {
+            if (fillGridXOffset != 0) {
+                LogUtils.d("偏移新增");
+
+                //
+                drawFillGridItem(f.getLocusEndRect(), f.getAction());
+                //
+                if (f.isUse() && inner != index) {
+                    drawFillGridItem(f.getLocusEndRect(), mFillGridPaint, mTextPaint, f.getAction(), keyWords.get(f.getAnswerIndex()).getContent());
+                }
+
+            } else {
+                LogUtils.d("原始新增");
+                //
+                drawFillGridItem(f.getmDrawRect(), f.getAction());
+                //
+                if (f.isUse() && inner != index) {
+                    drawFillGridItem(f.getmDrawRect(), mFillGridPaint, mTextPaint, f.getAction(), keyWords.get(f.getAnswerIndex()).getContent());
+                }
+
+            }
+            inner++;
+        }
+
+        /**
+         *
+         */
+        Rect rect = new Rect((int) x, (int) y,
+                (int) (x + KeyBoardItemW), (int) (y + KeyBoardItemH));
+        fillGrid.setAnswerRect(rect);
+        drawFillGridItem(rect, mFillGridPaint, mTextPaint, "anim", keyWords.get(fillGrid.getAnswerIndex()).getContent());
 
 
+        /**
+         *
+         */
         LogUtils.d("動畫狀態：" + fillGrid.isAnimFinished());
         if (fillGrid.isAnimFinished()) {
+            fillGridXOffset = 0;
+
             /**
              * 狀態變化
              * isAdd > false
@@ -1641,19 +1865,28 @@ public class SpellKeyBoard extends View {
              * isOK
              */
             boolean isOK = true;
+            int key = 0;
             for (fillGrid f : fillGrids) {
-                LogUtils.d("isAdd: " + f.isAdd() + ",isAnim: " + f.isAnim());
+                LogUtils.d("isAdd: " + f.isAdd() + ",isAnim: " + f.isAnim() + ",isAnimFinished: " + f.isAnimFinished());
                 if (f.isAdd() || f.isAnim()) {
                     isOK = false;
+                    /**
+                     * 執行過快
+                     */
+                    if (key > index) {
+
+                    }
                 }
+                key++;
             }
             /**
              * 檢查完畢
              */
             if (isOK) {
-                LogUtils.d("解除綁定");
+                LogUtils.d("ADD 解除綁定");
                 isAdd = false;
                 isLock = false;
+
             }
 
         }
@@ -1663,14 +1896,15 @@ public class SpellKeyBoard extends View {
     /**
      * 清除答案動畫[個體]
      */
-    private void fillGridItemClearAnim(fillGrid fillGrid, Canvas canvas) {
+    private void fillGridItemClearAnim(fillGrid fillGrid, Canvas canvas, int index) {
+        canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
         LogUtils.d("清除動畫");
-        LogUtils.d("原來的範圍: " + fillGrid.getLocusStartRect() + ",前往的範圍 Y: " + fillGrid.getLocusEndRect());
+        LogUtils.d("原來的範圍: " + fillGrid.getLocusStartRect() + ",前往的範圍 Y: " + keyWords.get(fillGrid.getAnswerIndex()).getmDrawRect());
         /**
-         * 測量距離
+         * 測量距離 [按鍵]
          */
-        float disranceX = (fillGrid.getLocusStartRect().left - fillGrid.getLocusEndRect().left);
-        float disranceY = (fillGrid.getLocusStartRect().top - fillGrid.getLocusEndRect().top);
+        float disranceX = (fillGrid.getLocusStartRect().left - keyWords.get(fillGrid.getAnswerIndex()).getmDrawRect().left);
+        float disranceY = (fillGrid.getLocusStartRect().top - keyWords.get(fillGrid.getAnswerIndex()).getmDrawRect().top);
         LogUtils.d("需位移距離X: " + (int) disranceX + ",需位移距離Y: " + (int) disranceY);
         /**
          * 百分比
@@ -1682,7 +1916,7 @@ public class SpellKeyBoard extends View {
          */
         int alpha = (int) new BigDecimal(((float) 1 - percentage) * (float) 255).setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
         mAnimPaint.setAlpha(alpha > 255 ? 255 : alpha);
-        LogUtils.d("alpha: " + alpha);
+        LogUtils.d("index " + index + ",alpha : " + alpha);
         /**
          * 計算要繪製的地點
          */
@@ -1691,16 +1925,28 @@ public class SpellKeyBoard extends View {
         float y = new BigDecimal(fillGrid.getLocusStartRect().top - disranceY * percentage)
                 .setScale(1, BigDecimal.ROUND_HALF_UP).floatValue();
 
+        int inner = 0;
+        for (fillGrid f : fillGrids) {
+            drawFillGridItem(f.getmDrawRect(), f.getAction());
+            if (f.isUse() && inner != index) {
+                drawFillGridItem(f.getmDrawRect(), mFillGridPaint, mTextPaint, f.getAction(), keyWords.get(f.getAnswerIndex()).getContent());
+            }
+            inner++;
+        }
+
+        /**
+         *
+         */
         Rect rect = new Rect((int) x, (int) y,
                 (int) (x + KeyBoardItemW), (int) (y + KeyBoardItemH));
-        canvas.drawBitmap(KeyBoardItemNormal, null, rect, mAnimPaint);
-        int textX = (int) (x + KeyBoardItemW / 2);
-        int textY = (int) (y + (KeyBoardItemW / 2 - ((mTextPaint.descent() + mTextPaint.ascent()))) - 0.5f);
-        canvas.drawText(keyWords.get(fillGrid.getAnswerIndex()).getContent(), textX, textY, mAnimPaint);
+        fillGrid.setAnswerRect(rect);
+        if (!fillGrid.isAnimFinished())
+            drawFillGridItem(rect, mAnimPaint, mAnimPaint, "anim", keyWords.get(fillGrid.getAnswerIndex()).getContent());
         //
 
         if (fillGrid.isAnimFinished()) {
             LogUtils.d("清除結束");
+            fillGridXOffset = 0;
             /**
              * 狀態變化
              * isAdd > false
@@ -1722,7 +1968,7 @@ public class SpellKeyBoard extends View {
              */
             boolean isOK = true;
             for (fillGrid f : fillGrids) {
-                LogUtils.d("isAdd: " + f.isAdd() + ",isAnim: " + f.isAnim());
+                LogUtils.d("isAdd: " + f.isAdd() + ",isAnim: " + f.isAnim() + ",isAnimFinished: " + f.isAnimFinished());
                 if (f.isAdd() || f.isAnim()) {
                     isOK = false;
                 }
@@ -1731,7 +1977,7 @@ public class SpellKeyBoard extends View {
              * 檢查完畢
              */
             if (isOK) {
-                LogUtils.d("解除綁定");
+                LogUtils.d("CLear 解除綁定");
                 isAdd = false;
                 isLock = false;
             }
@@ -1739,7 +1985,7 @@ public class SpellKeyBoard extends View {
             /**
              * 答題正確後 動畫已經結束 的回傳
              */
-            if(isFinish && isOK){
+            if (isFinish && isOK) {
                 /**
                  * 呼叫答題正確 全數刪除答案
                  * callback answerCorrectAnimFinish 動畫結束
@@ -1748,6 +1994,79 @@ public class SpellKeyBoard extends View {
                 isFinish = false;
             }
         }
+    }
+
+    /**
+     * 清除答案全體
+     */
+    private void fillGridItemClearAllAnim(Canvas canvas, float fillGridXOffset, float percentage) {
+        canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+
+        /**
+         *
+         */
+        for (fillGrid f : fillGrids) {
+            /**
+             * 測量距離 [按鍵]
+             */
+            float disranceX = (f.getmDrawRect().left - keyWords.get(f.getAnswerIndex()).getmDrawRect().left);
+            float disranceY = (f.getmDrawRect().top - keyWords.get(f.getAnswerIndex()).getmDrawRect().top);
+            LogUtils.d("需位移距離X: " + (int) disranceX + ",需位移距離Y: " + (int) disranceY);
+
+            int alpha = (int) new BigDecimal(((float) 1 - percentage) * (float) 255).setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
+            mAnimPaint.setAlpha(alpha > 255 ? 255 : alpha);
+            /**
+             * 計算要繪製的地點
+             */
+            float keyX = new BigDecimal(f.getmDrawRect().left - disranceX * percentage)
+                    .setScale(1, BigDecimal.ROUND_HALF_UP).floatValue();
+            float keyY = new BigDecimal(f.getmDrawRect().top - disranceY * percentage)
+                    .setScale(1, BigDecimal.ROUND_HALF_UP).floatValue();
+            float fillX = new BigDecimal(f.getmDrawRect().left - fillGridXOffset * percentage)
+                    .setScale(1, BigDecimal.ROUND_HALF_UP).floatValue();
+            float fillY = new BigDecimal(f.getmDrawRect().top)
+                    .setScale(1, BigDecimal.ROUND_HALF_UP).floatValue();
+
+            LogUtils.d("keyX:" + keyX + ",keyY:" + keyY);
+            LogUtils.d("fillX:" + fillX + ",fillY:" + fillY);
+
+            Rect keyRect = new Rect((int) keyX, (int) keyY,
+                    (int) (keyX + KeyBoardItemH), (int) (keyY + KeyBoardItemW));
+
+            Rect fillRect = new Rect((int) fillX, (int) fillY,
+                    (int) (fillX + fillGridItemH), (int) (fillY + fillGridItemW));
+
+            LogUtils.d("keyRect:" + keyRect);
+            LogUtils.d("fillRect:" + fillRect);
+
+            drawFillGridItem(fillRect, f.getAction());
+            drawFillGridItem(keyRect, mAnimPaint, mAnimPaint, f.getAction(), keyWords.get(f.getAnswerIndex()).getContent());
+
+        }
+
+        boolean isOK = true;
+        for (fillGrid f : fillGrids) {
+            if (f.isClear() || f.isAnim()) {
+                isOK = false;
+            }
+        }
+
+        if (isOK) {
+            LogUtils.d("CLear 解除綁定");
+            isAdd = false;
+            isLock = false;
+        }
+
+        if (isFinish && isOK) {
+            /**
+             * 呼叫答題正確 全數刪除答案
+             * callback answerCorrectAnimFinish 動畫結束
+             */
+            listener.answerCorrectAnimFinish();
+            isFinish = false;
+        }
+
+
     }
 
     /**
@@ -1785,8 +2104,27 @@ public class SpellKeyBoard extends View {
          * 中途取消 答案數量不夠 不執行跳出
          */
         if (answerList.size() != answerNonSpacelength) return;
-        //鎖 繪製
-        isLock=true;
+        /**
+         * 檢查範圍 如果填寫的格子right 超過(最大X座標-答案區左右間距)
+         * 變更所有 的 答案座標 x軸 偏移量 [填寫格子的 原始範圍 right x座標] - [最大X座標-答案區左右間距]]
+         */
+        LogUtils.d("MRL:" + fillGridMRL);
+        if (fillGrids.get(0).getmDrawRect().left < (fillGridMRL)) {
+            /**
+             * x偏移量 fillGridXOffset
+             * 方向 fillGridXDirection true 向右 +
+             */
+            float x = new BigDecimal((float) fillGridMRL - (float) fillGrids.get(0).getmDrawRect().left).setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
+            LogUtils.d("需求位移比對 rect:" + fillGrids.get(0).getmDrawRect());
+            LogUtils.d("add X需求 偏移量:" + (int) x);
+            fillGridXDirection = false;
+            //
+            Rect endRect = new Rect(fillGrids.get(0).getmDrawRect().left + (int) x, fillGrids.get(0).getmDrawRect().top,
+                    fillGrids.get(0).getmDrawRect().right + (int) x, fillGrids.get(0).getmDrawRect().bottom);
+            LogUtils.d("重新建立 rect:" + endRect);
+        }
+
+
         /**
          * 設定動畫判斷參數
          * Use = false
@@ -1803,118 +2141,92 @@ public class SpellKeyBoard extends View {
             f.setLocusStartRect(f.getmDrawRect());
             f.setLocusEndRect(keyWords.get(f.getAnswerIndex()).getmDrawRect());
         }
+        /**
+         * 全部清除動畫
+         */
+        initAnimatefillGridsClearAll(animAllClearTime);
+        /**
+         * 資料初始化
+         */
         isClear = true;
         isFinish = true;
         fillGridUseNextIndex = 0;
         KeyBoardItemPreviousIndex = -1;
         answerList.clear();
-        //重繪
-        updateInvalidate();
-    }
-
-    /**
-     * 更新
-     */
-    public void updateInvalidate() {
-        mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-        /**
-         * 建立格子資訊
-         * (fillGridItemW/2)*spaceNum 空格
-         */
-        int index = 0;
-        for (fillGrid fillGrid : fillGrids) {
-            /**
-             * 上答案格底圖
-             */
-            if (!fillGrid.getContent().equals(" ")) {
-                LogUtils.d("繪製 答案格 底圖");
-                mCanvas.drawBitmap(mType == 1 ? FillGridItemNormalType1 : FillGridItemNormalType2, null, fillGrid.getmDrawRect(), mFillGridPaint);
-            }
-            /**
-             * 判斷 isUse 是使用過的 或是 沒有使用過的
-             */
-            if (fillGrid.isUse()) {
-                LogUtils.d("答案格 使用中");
-                /**
-                 * isAnim = true , isAdd = false 剛開始呼叫動畫線程 啟動
-                 */
-                if (fillGrid.isAnim() && fillGrid.isAdd() && !fillGrid.isAnimStart()) {
-                    LogUtils.d("填寫答案 動畫執行初始化");
-                    initAnimateKeyboard(animTime, fillGrid);
-                } else if (!fillGrid.isAnim() && !fillGrid.isAdd() && fillGrid.isAnimFinished()) {
-                    /**
-                     * isAnim = false  , isAdd = false
-                     * 直接建立
-                     */
-                    LogUtils.d("動畫已經結束 直接繪製圖示");
-                    //padding
-                    Rect r = new Rect(fillGrid.getAnswerRect().left + KeyBoardItemPadding, fillGrid.getAnswerRect().top + KeyBoardItemPadding
-                            , fillGrid.getAnswerRect().right - KeyBoardItemPadding, fillGrid.getAnswerRect().bottom - KeyBoardItemPadding);
-                    mCanvas.drawBitmap(KeyBoardItemTouch, null, r, mFillGridPaint);
-                    int textX = (int) (fillGrid.getAnswerRect().left + KeyBoardItemW / 2);
-                    int textY = (int) (fillGrid.getAnswerRect().top + (KeyBoardItemW / 2 - ((mTextPaint.descent() + mTextPaint.ascent()))) - 0.5f);
-                    LogUtils.d(" textX " + textX + ", textY" + textY);
-                    mCanvas.drawText(keyWords.get(fillGrid.getAnswerIndex()).getContent(), textX, textY, mTextPaint);
-                } else {
-                    LogUtils.d("其他");
-                    LogUtils.d("index: " + index + ",isAnimStart: " + fillGrid.isAnimStart());
-                    LogUtils.d("Add: " + fillGrid.isAdd() + ",isAnim: " + fillGrid.isAnim() + ",isAnimFinished: " + fillGrid.isAnimFinished());
-                }
-            } else {
-                LogUtils.d("答案格 解除使用");
-                /**
-                 * 清除答案
-                 * 設定
-                 * Use = false
-                 * isAnim = true
-                 * isClear = true
-                 * answerlist clear
-                 */
-                if (fillGrid.isAnim() && fillGrid.isClear() && !fillGrid.isAnimStart()) {
-                    LogUtils.d("清除答案 動畫執行設定");
-                    initAnimatefillGrids(animClearTime, fillGrid);
-                } else if (!fillGrid.isAnim() && !fillGrid.isClear() && fillGrid.isAnimFinished()) {
-                    LogUtils.d("動畫已經結束 直接繪製圖示");
-                } else {
-                    LogUtils.d("其他");
-                    LogUtils.d("index: " + index);
-                    LogUtils.d("isClear: " + fillGrid.isClear() + ",isAnim: " + fillGrid.isAnim() + ",isAnimFinished: " + fillGrid.isAnimFinished());
-                }
-            }
-            index++;
-        }
-        /**
-         * draw keyboard
-         */
-        drawKeyboard();
-        //
-        invalidate();
     }
 
     /**
      * 呼叫更新
      */
     public void updateKeyword() {
-        //清空畫布
-        mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-        mKeyBoardCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-        mFillGridCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-        //尚未有點擊需要退回的index [-1 = 沒有需要退回的index]
-        KeyBoardItemPreviousIndex = -1;
-        //下一個使用的 作答格子[紀錄] 歸0
-        fillGridUseNextIndex = 0;
-        //答案資料清空
-        if(answerList!= null)answerList.clear();
-        //計算 佈局參數 「鍵盤、答案」
-        initViewSize();
-        //初始化鍵盤區
-        initKeyboard();
-        //初始化答題區
-        initFillGrid();
-        //刷新
-        invalidate();
-        //
-        listener.update();
+
+        //延遲500毫秒
+        this.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                //清空畫布
+                mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+                mKeyBoardCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+                mFillGridCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+                //尚未有點擊需要退回的index [-1 = 沒有需要退回的index]
+                KeyBoardItemPreviousIndex = -1;
+                //下一個使用的 作答格子[紀錄] 歸0
+                fillGridUseNextIndex = 0;
+                //答案資料清空
+                if (answerList != null) answerList.clear();
+                //計算 佈局參數 「鍵盤、答案」
+                initViewSize();
+                //初始化鍵盤區
+                initKeyboard();
+                //初始化答題區
+                initFillGrid();
+                //刷新
+                invalidate();
+                //
+                listener.update();
+            }
+        },500);
+
+    }
+
+    /**
+     * 畫 沒使用過的 答案格
+     *
+     * @param rect   範圍
+     * @param Action 屬性
+     */
+    private void drawFillGridItem(Rect rect, String Action) {
+        /**
+         * Space , normal
+         */
+        if (!Action.equals(fillGrid.Action_Space)) {
+            mFillGridCanvas.drawBitmap(mType == 1 ? FillGridItemNormalType1 : FillGridItemNormalType2, null, rect, mFillGridPaint);
+        }
+    }
+
+    /**
+     * 畫 使用過的 答案格
+     *
+     * @param rect    範圍
+     * @param p       圖示畫筆
+     * @param tp      文字畫筆
+     * @param Action  屬性
+     * @param content 文字內容
+     */
+    private void drawFillGridItem(Rect rect, Paint p, Paint tp, String Action, String content) {
+        /**
+         * Space , normal
+         */
+        if (!Action.equals(fillGrid.Action_Space)) {
+
+            Rect r = new Rect(rect.left + KeyBoardItemPadding, rect.top + KeyBoardItemPadding,
+                    rect.right - KeyBoardItemPadding, rect.bottom - KeyBoardItemPadding);
+            mFillGridCanvas.drawBitmap(KeyBoardItemTouch, null, r, p);
+            int textX = (int) (rect.left + KeyBoardItemW / 2);
+            int textY = (int) (rect.top + (KeyBoardItemW / 2 - ((mTextPaint.descent() + mTextPaint.ascent()))) - 0.5f);
+            mFillGridCanvas.drawText(content, textX, textY, tp);
+        }
+
     }
 
 }

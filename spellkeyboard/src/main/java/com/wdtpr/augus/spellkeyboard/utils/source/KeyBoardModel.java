@@ -33,7 +33,6 @@ public class KeyBoardModel {
      * 每一個鍵盤的位置 座標 初始繪製 每一個按鍵
      *
      * @param keyboards           鍵盤按鍵 [尚未給予座標]
-     * @param mCanvas             畫布
      * @param KeyBoardLevelCount  每一層的按鍵數量
      * @param KeyBoardMRL         鍵盤整體左右間距
      * @param KeyBoardMTB         鍵盤整體上下間距
@@ -42,16 +41,11 @@ public class KeyBoardModel {
      * @param KeyBoardItemW       鍵盤按鍵 寬
      * @param KeyBoardItemH       鍵盤按鍵 高
      * @param fillGridH           答案區 高
-     * @param KeyBoardItemNormal  鍵盤按鍵 圖示[一般鍵/尚未點擊]
-     * @param KeyboardItemBackOne 鍵盤按鍵 圖示[退後鍵]
-     * @param mKeyboardPaint      鍵盤圖示畫筆
-     * @param mTextPaint          鍵盤內容畫筆
      * @return
      */
-    public List<keyboard> setKeyBoardItemSize(List<keyboard> keyboards, Canvas mCanvas, int KeyBoardLevelCount,
+    public List<keyboard> setKeyBoardItemSize(List<keyboard> keyboards,  int KeyBoardLevelCount,
                                               int KeyBoardMRL, int KeyBoardMTB, float KeyBoardItemSpaceRL, float KeyBoardItemSpaceTB,
-                                              int KeyBoardItemW, int fillGridH, int KeyBoardItemH, Bitmap KeyBoardItemNormal,
-                                              Bitmap KeyboardItemBackOne, Paint mKeyboardPaint, Paint mTextPaint) {
+                                              int KeyBoardItemW, int fillGridH, int KeyBoardItemH) {
         mkeyboardlist = keyboards;
         /**
          * 迴圈內必須知道建立的是第幾個按鍵
@@ -85,9 +79,31 @@ public class KeyBoardModel {
             r = new Rect((int) ItemX, (int) ItemY,
                     (int) ItemX + KeyBoardItemW, (int) ItemY + KeyBoardItemH);
             k.setmDrawRect(r);
-            LogUtils.d("層級 x : " + x + ", ItemW: " + (int) ItemX +" ; 層級 y : " + y + ", ItemH: " + (int) ItemY
-            +";\n"+"index:" + index + ",rect" + k.getmDrawRect().toString()+" ; "
-                    +"left:" + k.getmDrawRect().left + ",top:" + k.getmDrawRect().top + ",right:" + k.getmDrawRect().right + ",bottom:" + k.getmDrawRect().bottom);
+            LogUtils.d("層級 x : " + x + ", ItemW: " + (int) ItemX + " ; 層級 y : " + y + ", ItemH: " + (int) ItemY
+                    + ";\n" + "index:" + index + ",rect" + k.getmDrawRect().toString() + " ; "
+                    + "left:" + k.getmDrawRect().left + ",top:" + k.getmDrawRect().top + ",right:" + k.getmDrawRect().right + ",bottom:" + k.getmDrawRect().bottom);
+
+            index++;
+        }
+        return mkeyboardlist;
+    }
+
+    /**
+     * 繪製
+     *
+     * @param keyboards           資料內容
+     * @param mCanvas             畫布
+     * @param KeyBoardItemNormal  鍵盤按鍵 圖示[一般鍵/尚未點擊]
+     * @param KeyboardItemBackOne 鍵盤按鍵 圖示[退後鍵]
+     * @param mKeyboardPaint      鍵盤圖示畫筆
+     * @param mTextPaint          鍵盤內容畫筆
+     */
+    public void drawKeyBoard(List<keyboard> keyboards, Canvas mCanvas, int KeyBoardItemW, Bitmap KeyBoardItemNormal,
+                             Bitmap KeyboardItemBackOne, Paint mKeyboardPaint, Paint mTextPaint) {
+        /**
+         *
+         */
+        for (keyboard k : keyboards) {
             /**
              * 區分 back  and 一般
              * 如果已經使用 use = true 在答案格上 [多]繪製
@@ -103,9 +119,7 @@ public class KeyBoardModel {
                 //back
                 mCanvas.drawBitmap(KeyboardItemBackOne, null, k.getmDrawRect(), mKeyboardPaint);
             }
-            //
-            index++;
         }
-        return mkeyboardlist;
+
     }
 }

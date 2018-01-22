@@ -14,7 +14,8 @@ public class fillGrid implements Serializable {
 
     private String content;
     private String Action;//使用資料型態 [keyboard,Back]
-    private Rect mDrawRect;//繪製的範圍 [答案格位置]
+    private Rect mDrawRect;//繪製的範圍起始點 [答案格位置]
+    private Rect mDrawEndRect;//繪製的範圍終點 [答案格位置]
     private float startX;//開始x座標
     private float startY;//開始Ｙ座標
 
@@ -31,7 +32,7 @@ public class fillGrid implements Serializable {
     private Rect LocusStartRect;//動畫開始範圍
     private Rect LocusEndRect;//動畫結束範圍
     private float percentage = 0;//執行百分比
-    private boolean animFinished;//動畫結束呼叫
+    private boolean animFinished = true ;//動畫結束呼叫
 
     @Override
     public String toString() {
@@ -194,5 +195,13 @@ public class fillGrid implements Serializable {
 
     public void setMove(boolean move) {
         isMove = move;
+    }
+
+    public Rect getmDrawEndRect() {
+        return mDrawEndRect;
+    }
+
+    public void setmDrawEndRect(Rect mDrawEndRect) {
+        this.mDrawEndRect = mDrawEndRect;
     }
 }
