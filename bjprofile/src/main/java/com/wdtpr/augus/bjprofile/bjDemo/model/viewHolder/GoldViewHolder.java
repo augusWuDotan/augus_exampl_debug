@@ -8,6 +8,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.wdtpr.augus.bjprofile.R;
 import com.wdtpr.augus.bjprofile.bjDemo.adapter.base.BaseViewHolder;
+import com.wdtpr.augus.bjprofile.bjDemo.glide.GlideApp;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.GoldRecord.GoldRecordItem;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Speak.SpeakItem;
 import com.wdtpr.augus.bjprofile.bjDemo.utils.DateUtils;
@@ -60,9 +61,9 @@ public class GoldViewHolder extends BaseViewHolder {
         try {
             //icon
             if(bean.isGoldType()){
-                Glide.with(ivCoinIcon.getContext()).load(R.drawable.monster_coin).asBitmap().error(R.drawable.irs_gray).into(ivCoinIcon);
+                GlideApp.with(ivCoinIcon.getContext()).asBitmap().load(R.drawable.monster_coin).error(R.drawable.irs_gray).into(ivCoinIcon);
             }else{
-                Glide.with(ivCoinIcon.getContext()).load(R.drawable.coin).asBitmap().error(R.drawable.irs_gray).into(ivCoinIcon);
+                GlideApp.with(ivCoinIcon.getContext()).asBitmap().load(R.drawable.coin).error(R.drawable.irs_gray).into(ivCoinIcon);
             }
         }catch (Exception e){
             LogUtils.e(e.getMessage());

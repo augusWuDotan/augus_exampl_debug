@@ -165,7 +165,7 @@ public class SpellKeyBoard extends View {
     /**
      * 填答案 偏移量
      */
-    private int KeyBoardItemPadding = 5;
+    private int KeyBoardItemPadding = 2;
     /**
      * keyboard touch index
      */

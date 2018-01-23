@@ -1,19 +1,13 @@
 package com.wdtpr.augus.bjprofile.bjDemo.model.viewHolder;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.view.View;
-import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
 import com.wdtpr.augus.bjprofile.R;
 import com.wdtpr.augus.bjprofile.bjDemo.adapter.base.BaseViewHolder;
-import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Movie.MovieItem;
+import com.wdtpr.augus.bjprofile.bjDemo.glide.GlideApp;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Speak.SpeakItem;
 import com.wdtpr.augus.bjprofile.bjDemo.utils.LogUtils;
 import com.wdtpr.augus.bjprofile.bjDemo.utils.StringUtils;
@@ -79,20 +73,20 @@ public class SpeakViewHolder extends BaseViewHolder {
 
             switch (bean.getStatus()) {
                 case "0":
-                    Glide.with(context).load(R.drawable.nplay).asBitmap().into(ivPlayIcon);
-                    Glide.with(context).load(R.drawable.turntable_status0).asBitmap().into(ivStatusIcon);
+                    GlideApp.with(context).asBitmap().load(R.drawable.nplay).into(ivPlayIcon);
+                    GlideApp.with(context).asBitmap().load(R.drawable.turntable_status0).into(ivStatusIcon);
                     break;
                 case "1":
-                    Glide.with(context).load(R.drawable.play_normal).asBitmap().into(ivPlayIcon);
-                    Glide.with(context).load(R.drawable.turntable_status1).asBitmap().into(ivStatusIcon);
+                    GlideApp.with(context).asBitmap().load(R.drawable.play_normal).into(ivPlayIcon);
+                    GlideApp.with(context).asBitmap().load(R.drawable.turntable_status1).into(ivStatusIcon);
                     break;
                 case "2":
-                    Glide.with(context).load(R.drawable.play_normal).asBitmap().into(ivPlayIcon);
-                    Glide.with(context).load(R.drawable.turntable_status2).asBitmap().into(ivStatusIcon);
+                    GlideApp.with(context).asBitmap().load(R.drawable.play_normal).into(ivPlayIcon);
+                    GlideApp.with(context).asBitmap().load(R.drawable.turntable_status2).into(ivStatusIcon);
                     break;
                 default:
-                    Glide.with(context).load(R.drawable.nplay).asBitmap().into(ivPlayIcon);
-                    Glide.with(context).load(R.drawable.turntable_status0).asBitmap().into(ivStatusIcon);
+                    GlideApp.with(context).asBitmap().load(R.drawable.nplay).into(ivPlayIcon);
+                    GlideApp.with(context).asBitmap().load(R.drawable.turntable_status0).into(ivStatusIcon);
                     break;
             }
         } catch (Exception e) {

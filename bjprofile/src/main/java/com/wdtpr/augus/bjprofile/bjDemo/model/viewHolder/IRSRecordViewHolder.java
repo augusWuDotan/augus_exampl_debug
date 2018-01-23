@@ -14,6 +14,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.wdtpr.augus.bjprofile.R;
 import com.wdtpr.augus.bjprofile.bjDemo.adapter.base.BaseViewHolder;
+import com.wdtpr.augus.bjprofile.bjDemo.glide.GlideApp;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Irs_Record.IRS_RecordItem;
 import com.wdtpr.augus.bjprofile.bjDemo.utils.LogUtils;
 
@@ -106,7 +107,7 @@ public class IRSRecordViewHolder extends BaseViewHolder {
     public void setImage(ImageView img, int Rid){
         //
         try {
-            Glide.with(img.getContext()).load(Rid).asBitmap().error(R.drawable.irs_gray).into(img);
+            GlideApp.with(img.getContext()).asBitmap().load(Rid).error(R.drawable.irs_gray).into(img);
         }catch (Exception e){
             LogUtils.e(e.getMessage());
         }

@@ -15,58 +15,22 @@ import com.wdtpr.augus.bjprofile.bjDemo.presenter.LearnRecord.ILearnRecordContra
 import com.wdtpr.augus.bjprofile.bjDemo.presenter.LearnRecord.LearnRecordPresenter;
 import com.wdtpr.augus.debugnetexample.R;
 import com.wdtpr.augus.debugnetexample.base.Utils.LogUtils;
-import com.wdtpr.augus.spellkeyboard.model.listener.SpellKeyBoardListener;
-import com.wdtpr.augus.spellkeyboard.widget.SpellKeyBoard;
 
 import java.util.List;
-import java.util.Random;
 
 
-public class BjActivity extends AppCompatActivity implements SpellKeyBoardListener  {
+public class BjActivity extends AppCompatActivity {
 
 
     private LearnRecordPresenter learnRecordPresenter;
 
-    SpellKeyBoard mSpellKeyBoard;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bj_main);
 
-
-//        //init
-        mSpellKeyBoard = (SpellKeyBoard) findViewById(R.id.mSpellKeyBoard);
-        //set anwser
-        mSpellKeyBoard.setAnswer("aaaaaa bbbbbb");
-        /**
-         * set 按鍵數
-         * [count]<24 && [count]>=12 (需要3的倍數) ex 12,15,18,21
-         * [count]<=40 && [count]>=23(需要4的倍數) ex 24,28,32,36,40
-         */
-        mSpellKeyBoard.setKeyBoardNum(24);
-        /**
-         * 設定版型
-         */
-        mSpellKeyBoard.setmType(2);// 1:答案格藍底 2:答案格黃底
-        /**
-         * 設定callback
-         */
-        mSpellKeyBoard.listener = this;
-
-        mSpellKeyBoard.setKeyBoardItemPadding(3);
-        /**
-         * 更新方式
-         */
-//        mSpellKeyBoard.setAnswer("test");
-//        mSpellKeyBoard.setKeyBoardNum(24);
-//        mSpellKeyBoard.setmType(1);// 1:答案格藍底 2:答案格黃底
-//        mSpellKeyBoard.updateKeyword();//呼叫重繪
-
-
-
-
-
+//
 
 
         //
@@ -163,73 +127,4 @@ public class BjActivity extends AppCompatActivity implements SpellKeyBoardListen
         LogUtils.d("onDestroy");
     }
 
-
-
-
-
-
-    @Override
-    public void answerError(String ErrorStr) {
-        LogUtils.d("錯誤答案為："+ErrorStr);
-    }
-
-    @Override
-    public void answerCorrect(String CorrectStr) {
-        LogUtils.d("正確答案為："+CorrectStr);
-//                mSpellKeyBoard.setAnswer("money");//設定答案
-//                mSpellKeyBoard.setKeyBoardNum(24);//設定鍵盤數[size]
-//                mSpellKeyBoard.updateKeyword();//更新
-    }
-
-    @Override
-    public void alreadyEstablished() {
-        LogUtils.d("成功建立");
-    }
-
-    @Override
-    public void update() {
-        LogUtils.d("更新中");
-    }
-
-    @Override
-    public void updateError() {
-        LogUtils.d("更新錯誤");
-    }
-
-    @Override
-    public void alreadyBack() {
-        LogUtils.d("成功刪除");
-    }
-
-    @Override
-    public void alreadyAdd() {
-        LogUtils.d("成功新增");
-    }
-
-    @Override
-    public void answerCorrectAnimFinish() {
-        LogUtils.d("答題成功 刪除動畫執行結束");
-        Random r = new Random();
-        int index = r.nextInt(3);
-        if(index == 2){
-            mSpellKeyBoard.setAnswer("augus");
-            mSpellKeyBoard.setKeyBoardNum(12);
-            mSpellKeyBoard.setmType(2);// 1:答案格藍底 2:答案格黃底
-            mSpellKeyBoard.setKeyBoardItemPadding(5);//設定 答案格 的 按鍵 內縮多少
-            mSpellKeyBoard.updateKeyword();//呼叫重繪
-        }else if(index == 1){
-            mSpellKeyBoard.setAnswer("how");
-            mSpellKeyBoard.setKeyBoardNum(24);
-            mSpellKeyBoard.setmType(1);// 1:答案格藍底 2:答案格黃底
-            mSpellKeyBoard.setKeyBoardItemPadding(3);
-            mSpellKeyBoard.updateKeyword();//呼叫重繪
-        }else{
-            mSpellKeyBoard.setAnswer("Name");
-            mSpellKeyBoard.setKeyBoardNum(12);
-            mSpellKeyBoard.setmType(2);// 1:答案格藍底 2:答案格黃底
-            mSpellKeyBoard.setKeyBoardItemPadding(5);
-            mSpellKeyBoard.updateKeyword();//呼叫重繪
-        }
-
-    }
 }

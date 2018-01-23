@@ -13,6 +13,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.wdtpr.augus.bjprofile.R;
 import com.wdtpr.augus.bjprofile.bjDemo.adapter.base.BaseViewHolder;
+import com.wdtpr.augus.bjprofile.bjDemo.glide.GlideApp;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Movie.MovieItem;
 import com.wdtpr.augus.bjprofile.bjDemo.utils.LogUtils;
 
@@ -53,7 +54,7 @@ public class MovieViewHolder extends BaseViewHolder {
     public void bindViewData(Context context, Object data, int itemPosition,int finalPosition) {
         final MovieItem bean = (MovieItem) data;
 
-        Glide.with(ivStatusIcon.getContext()).load(R.drawable.irs_gray).asBitmap().into(ivStatusIcon);
+        GlideApp.with(ivStatusIcon.getContext()).asBitmap().load(R.drawable.irs_gray).into(ivStatusIcon);
         tvSchedule.setText(bean.getCourseNo());
         tvTitle.setText(bean.getTitle());
 
@@ -105,7 +106,7 @@ public class MovieViewHolder extends BaseViewHolder {
         //
         try {
             if (img.getContext() != null)
-                Glide.with(img.getContext()).load(Rid).asBitmap().error(R.drawable.irs_gray).into(img);
+                GlideApp.with(img.getContext()).asBitmap().load(Rid).error(R.drawable.irs_gray).into(img);
         }catch (Exception e){
             LogUtils.e(e.getMessage());
         }

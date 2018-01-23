@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:onClick="IRS"
         android:text="IRS"
-        android:visibility="gone"
+        android:visibility="visible"
         tools:ignore="OnClick" />
 
     <Button
@@ -23,7 +23,7 @@
         android:layout_below="@+id/IRS"
         android:onClick="MOVIE"
         android:text="MOVIE"
-        android:visibility="gone"
+        android:visibility="visible"
         tools:ignore="OnClick" />
 
     <Button
@@ -33,7 +33,7 @@
         android:layout_below="@+id/MOVIE"
         android:onClick="TEST"
         android:text="TEST"
-        android:visibility="gone"
+        android:visibility="visible"
         tools:ignore="OnClick" />
 
     <Button
@@ -43,7 +43,7 @@
         android:layout_below="@+id/TEST"
         android:onClick="RADAR"
         android:text="RADAR"
-        android:visibility="gone"
+        android:visibility="visible"
         tools:ignore="OnClick" />
 
     <Button
@@ -53,7 +53,7 @@
         android:layout_below="@+id/RADAR"
         android:onClick="SPEAK"
         android:text="SPEAK"
-        android:visibility="gone"
+        android:visibility="visible"
         tools:ignore="OnClick" />
 
     <Button
@@ -63,29 +63,10 @@
         android:layout_below="@+id/SPEAK"
         android:onClick="GOLD"
         android:text="GOLD"
-        android:visibility="gone"
+        android:visibility="visible"
         tools:ignore="OnClick" />
 
-    <com.wdtpr.augus.spellkeyboard.widget.SpellKeyBoard
-        android:id="@+id/mSpellKeyBoard"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        app:KeyboardItemBackOne="@drawable/keyboard_back_normal"
-        app:KeyboardItemBackTwo="@drawable/keyboard_back_press"
-        app:KeyboardItemPadding="5px"
-        app:answerCorrectAnimateDelay="3000"
-        app:fillGridPaddingRL="5px"
-        app:normalFillGridItemType1="@drawable/fillgrid_type1"
-        app:normalFillGridItemType2="@drawable/fillgrid_type2"
-        app:normalKeyboardItem="@drawable/keyboard_normal"
-        app:touchKeyboardItem="@drawable/keyboard_press" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:orientation="vertical"/>
 
 
 </LinearLayout>
