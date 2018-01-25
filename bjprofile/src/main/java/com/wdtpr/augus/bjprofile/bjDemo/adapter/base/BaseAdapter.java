@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import com.wdtpr.augus.bjprofile.bjDemo.adapter.factory.IItemType;
 import com.wdtpr.augus.bjprofile.bjDemo.adapter.factory.ItemTypeFactory;
 import com.wdtpr.augus.bjprofile.bjDemo.adapter.listener.OnMultiItemClickListener;
+import com.wdtpr.augus.bjprofile.bjDemo.utils.LogUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +37,7 @@ public abstract class BaseAdapter extends RecyclerView.Adapter<BaseViewHolder> {
     @Override
     public BaseViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(viewType, parent, false);
+//        LogUtils.d("viewType:"+viewType);
         return itemTypeFactory.createViewHolder(viewType, view);
     }
 

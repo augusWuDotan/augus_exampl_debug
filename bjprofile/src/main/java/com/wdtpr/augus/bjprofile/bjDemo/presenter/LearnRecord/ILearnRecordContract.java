@@ -8,6 +8,7 @@ import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Irs_Record.IRS_RecordData;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Movie.MovieData;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Radar.RadarModelData;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Speak.SpeakData;
+import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Spell.SpellData;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Test_Record.TEST_RecordData;
 
 import java.util.List;
@@ -33,6 +34,8 @@ public interface ILearnRecordContract {
         void GetSpeakTestRecordByIDSucess(List<SpeakData> bean);
 
         void GetGoldRecord(List<GoldRecordItem> bean);
+
+        void GetSpellSucess(List<SpellData> bean);
     }
 
     interface Presnter extends IBasePresenter {
@@ -55,5 +58,7 @@ public interface ILearnRecordContract {
         //GoldRecord
         void GetGoldRecord(int StudentId);
 
+        //GoldRecord
+        void GetSpellTestRecord(int StudentId);
     }
 }

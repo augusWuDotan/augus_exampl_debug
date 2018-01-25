@@ -18,6 +18,7 @@ import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Movie.MovieData;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Profile_Key;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Radar.RadarModelData;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Speak.SpeakData;
+import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Spell.SpellData;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Test_Record.TEST_RecordData;
 import com.wdtpr.augus.bjprofile.bjDemo.model.pager.mPagerAdapter;
 import com.wdtpr.augus.bjprofile.bjDemo.presenter.LearnRecord.ILearnRecordContract;
@@ -209,7 +210,7 @@ public class SpeakFragment extends Fragment implements ILearnRecordContract.Lear
         //this data
         mAdapter = new mPagerAdapter(getChildFragmentManager(), bean, Profile_Key.SPEAK.name());
         mViewPager.setAdapter(mAdapter);
-        mViewPager.setOffscreenPageLimit(0);
+        mViewPager.setOffscreenPageLimit(3);
         tvSchedule.setText(beanData.get(0).getBookNo());
     }
 
@@ -218,6 +219,11 @@ public class SpeakFragment extends Fragment implements ILearnRecordContract.Lear
         //null
     }
 
+
+    @Override
+    public void GetSpellSucess(List<SpellData> bean) {
+        //null
+    }
     @Override
     public void onDestroyView() {
         super.onDestroyView();

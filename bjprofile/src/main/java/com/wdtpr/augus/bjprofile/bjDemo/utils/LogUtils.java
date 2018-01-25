@@ -9,7 +9,7 @@ import android.util.Log;
 public class LogUtils {
 
     private final static boolean DEBUG = true;
-    private final static String  LOG_TAG = "LogUtils";
+    private final static String  LOG_TAG = "BJ";
 
     public static void v(String msg) {
         if (DEBUG) {

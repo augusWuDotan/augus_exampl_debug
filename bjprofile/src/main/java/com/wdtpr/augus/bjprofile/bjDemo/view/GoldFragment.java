@@ -21,6 +21,7 @@ import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Movie.MovieData;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Profile_Key;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Radar.RadarModelData;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Speak.SpeakData;
+import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Spell.SpellData;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Test_Record.TEST_RecordData;
 import com.wdtpr.augus.bjprofile.bjDemo.model.pager.mPagerAdapter;
 import com.wdtpr.augus.bjprofile.bjDemo.presenter.LearnRecord.ILearnRecordContract;
@@ -170,6 +171,11 @@ public class GoldFragment extends Fragment implements ILearnRecordContract.Learn
         if(!ListUtils.isEmpty(bean)){
             adapter.resetDatas(bean);
         }
+    }
+
+    @Override
+    public void GetSpellSucess(List<SpellData> bean) {
+        //null
     }
 
     @Override

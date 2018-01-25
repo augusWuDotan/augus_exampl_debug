@@ -7,6 +7,8 @@ import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Movie.Movie;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Radar.RadarBean;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.ServerBean;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Speak.Speak;
+import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Spell.Spell;
+import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Spell.SpellData;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Test_Record.TEST_Record;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Test_Record.TEST_RecordData;
 
@@ -63,5 +65,10 @@ public interface API {
     @FormUrlEncoded
     @POST("api/LearnRecord/GetGoldRecord")
     Flowable<Result<GoldRecord>> GetGoldRecord(@Header("server_token") String server_token, @Field("StudentID") int studentID);
+
+    //Spell
+    @FormUrlEncoded
+    @POST("api/LearnRecord/GetSpellTestRecord")
+    Flowable<Result<Spell>> GetSpellTestRecord(@Header("server_token") String server_token, @Field("StudentID") int studentID);
 
 }

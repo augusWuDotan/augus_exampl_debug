@@ -3,13 +3,18 @@ package com.wdtpr.augus.bjprofile.bjDemo.model.viewHolder;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.support.constraint.ConstraintLayout;
 import android.util.TypedValue;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.wdtpr.augus.bjprofile.R;
 import com.wdtpr.augus.bjprofile.bjDemo.adapter.base.BaseViewHolder;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Test_Record.TEST_RecordItem;
+import com.wdtpr.augus.bjprofile.bjDemo.utils.LogUtils;
+
+import java.math.BigDecimal;
 
 
 /**
@@ -18,17 +23,24 @@ import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Test_Record.TEST_RecordIte
  */
 
 public class TestViewHolder extends BaseViewHolder {
-
+    private ConstraintLayout cl;
     private TextView tv1, tvScore, tvAverage, tvMax;
     private View vDotted;
 
     public TestViewHolder(View itemView) {
         super(itemView);
+        cl = (ConstraintLayout) getView(R.id.cl);
         tv1 = (TextView) getView(R.id.tv1);
         tvScore = (TextView) getView(R.id.tvScore);
         tvAverage = (TextView) getView(R.id.tvAverage);
         tvMax = (TextView) getView(R.id.tvMax);
         vDotted = (View) getView(R.id.vDotted);
+//        LogUtils.d("總高：" + itemView.getResources().getDisplayMetrics().heightPixels);
+        float scaleH = new BigDecimal((itemView.getContext().getResources().getDisplayMetrics().heightPixels / 1920f) * 150).setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
+//        LogUtils.d("scaleH：" + scaleH);
+        ViewGroup.LayoutParams lp = cl.getLayoutParams();
+        lp.height = (int) scaleH;
+        cl.setLayoutParams(lp);
     }
 
     @Override

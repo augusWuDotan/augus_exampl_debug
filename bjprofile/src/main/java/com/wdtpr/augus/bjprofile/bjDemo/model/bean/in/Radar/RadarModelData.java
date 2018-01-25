@@ -11,42 +11,63 @@ import java.util.List;
 public class RadarModelData implements Serializable {
     /*
     {
-    "title": "总学习雷达图",
-    "key": [
-        {
-            "Key_Title": "所有学习范围",
-            "label": [
-                {
-                    "Label_Name": "阅读",
-                    "Score": 90
-                },
-                {
-                    "Label_Name": "单词听力",
-                    "Score": 93
-                },
-                {
-                    "Label_Name": "单词认读",
-                    "Score": 96
-                },
-                {
-                    "Label_Name": "句型听力",
-                    "Score": 96
-                },
-                {
-                    "Label_Name": "语法",
-                    "Score": 92
-                },
-                {
-                    "Label_Name": "拼字",
-                    "Score": 86
-                },
-                {
-                    "Label_Name": "语法句构",
-                    "Score": 100
-                }
-            ]
-        }
-    ]
+    "result_status": true,
+    "result_message": null,
+    "result_content": {
+        "title": "总学习雷达图",
+        "key": [
+            {
+                "Key_Title": "所有学习范围",
+                "Color_Number": "#ff000077",
+                "label": [
+                    {
+                        "Label_Name": "句型听力",
+                        "Score": 87
+                    },
+                    {
+                        "Label_Name": "语法",
+                        "Score": 90
+                    },
+                    {
+                        "Label_Name": "阅读",
+                        "Score": 78
+                    },
+                    {
+                        "Label_Name": "单词听力",
+                        "Score": 83
+                    },
+                    {
+                        "Label_Name": "单词认读",
+                        "Score": 89
+                    },
+                    {
+                        "Label_Name": "拼字",
+                        "Score": 77
+                    },
+                    {
+                        "Label_Name": "单词听力",
+                        "Score": 67
+                    },
+                    {
+                        "Label_Name": "单词认读",
+                        "Score": 42
+                    },
+                    {
+                        "Label_Name": "阅读",
+                        "Score": 22
+                    },
+                    {
+                        "Label_Name": "句型听力",
+                        "Score": 33
+                    },
+                    {
+                        "Label_Name": "文法",
+                        "Score": 42
+                    }
+                ]
+            }
+        ]
+    }
 }
      */
 

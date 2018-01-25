@@ -4,7 +4,9 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.support.constraint.ConstraintLayout;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -17,6 +19,8 @@ import com.wdtpr.augus.bjprofile.bjDemo.glide.GlideApp;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Movie.MovieItem;
 import com.wdtpr.augus.bjprofile.bjDemo.utils.LogUtils;
 
+import java.math.BigDecimal;
+
 
 /**
  * Created by Ray on 2017/8/22.
@@ -25,6 +29,7 @@ import com.wdtpr.augus.bjprofile.bjDemo.utils.LogUtils;
 
 public class MovieViewHolder extends BaseViewHolder {
 
+    private ConstraintLayout cl;
     private ProgressBar mPb;
     private View vDotted;
     private ImageView ivStatusIcon;
@@ -33,11 +38,19 @@ public class MovieViewHolder extends BaseViewHolder {
 
     public MovieViewHolder(View itemView) {
         super(itemView);
+        cl = (ConstraintLayout)getView(R.id.cl);
         mPb = (ProgressBar) getView(R.id.mPb);
         tvSchedule = (TextView) getView(R.id.tvSchedule);
         tvTitle = (TextView) getView(R.id.tvTitle);
         vDotted = (View) getView(R.id.vDotted);
+
         ivStatusIcon = (ImageView) getView(R.id.ivStatusIcon);
+        LogUtils.d("總高：" + itemView.getResources().getDisplayMetrics().heightPixels);
+        float scaleH = new BigDecimal((itemView.getContext().getResources().getDisplayMetrics().heightPixels / 1920f) * 150).setScale(0, BigDecimal.ROUND_HALF_UP).floatValue();
+        LogUtils.d("scaleH：" + scaleH);
+        ViewGroup.LayoutParams lp = cl.getLayoutParams();
+        lp.height = (int) scaleH;
+        cl.setLayoutParams(lp);
     }
 
     @Override
@@ -72,6 +85,7 @@ public class MovieViewHolder extends BaseViewHolder {
                 @Override
                 public void onAnimationEnd(Animator animation) {
                     super.onAnimationEnd(animation);
+                    animation.cancel();
                     setImage(ivStatusIcon, rid);
                 }
             });
@@ -84,6 +98,7 @@ public class MovieViewHolder extends BaseViewHolder {
                 @Override
                 public void onAnimationEnd(Animator animation) {
                     super.onAnimationEnd(animation);
+                    animation.cancel();
                     setImage(ivStatusIcon, rid);
                 }
             });

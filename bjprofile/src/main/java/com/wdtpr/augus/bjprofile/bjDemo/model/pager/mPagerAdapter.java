@@ -3,11 +3,13 @@ package com.wdtpr.augus.bjprofile.bjDemo.model.pager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.view.ViewGroup;
 
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Irs_Record.IRS_RecordData;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Movie.MovieData;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Profile_Key;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Speak.SpeakData;
+import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Spell.SpellData;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Test_Record.TEST_RecordData;
 import com.wdtpr.augus.bjprofile.bjDemo.utils.ListUtils;
 import com.wdtpr.augus.bjprofile.bjDemo.view.ProfileFragment;
@@ -28,6 +30,7 @@ public class mPagerAdapter extends FragmentPagerAdapter {
     private List<MovieData> movieDataItemList;
     private List<TEST_RecordData> test_recordDataList;
     private List<SpeakData> speakDataList;
+    private List<SpellData> spellDataList;
 
     public mPagerAdapter(FragmentManager fm, Object data, String key) {
         super(fm);
@@ -47,6 +50,9 @@ public class mPagerAdapter extends FragmentPagerAdapter {
                     break;
                 case SPEAK:
                     speakDataList = (List<SpeakData>) data;
+                    break;
+                case SPELL:
+                    spellDataList = (List<SpellData>) data;
                     break;
             }
         }
@@ -73,6 +79,10 @@ public class mPagerAdapter extends FragmentPagerAdapter {
                 if (!ListUtils.isEmpty(speakDataList))
                     fragment = ProfileFragment.addSpeakNewInstance(key, speakDataList.get(position));
                 return fragment;
+            case SPELL:
+                if (!ListUtils.isEmpty(spellDataList))
+                    fragment = ProfileFragment.addSpellNewInstance(key, spellDataList.get(position));
+                return fragment;
         }
         return null;
     }
@@ -95,11 +105,19 @@ public class mPagerAdapter extends FragmentPagerAdapter {
                 case SPEAK:
                     if (ListUtils.isEmpty(speakDataList)) return 0;
                     else return speakDataList.size();
+                case SPELL:
+                    if (ListUtils.isEmpty(spellDataList)) return 0;
+                    else return spellDataList.size();
                 default:
                     return 0;
             }
         } else {
             return 0;
         }
+    }
+
+    @Override
+    public void destroyItem(ViewGroup container, int position, Object object) {
+        super.destroyItem(container, position, object);
     }
 }

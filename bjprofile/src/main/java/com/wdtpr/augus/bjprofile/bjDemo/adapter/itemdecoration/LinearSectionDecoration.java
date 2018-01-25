@@ -253,4 +253,6 @@ public class LinearSectionDecoration extends RecyclerView.ItemDecoration {
         // 取得當前位置Item的Text
         String getItemStr(int poisition);
     }
+
+
 }

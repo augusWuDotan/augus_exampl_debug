@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 
 import com.facebook.FacebookSdk;
+import com.wdtpr.augus.debugnetexample.base.Utils.DisplayUtils;
 import com.wdtpr.augus.debugnetexample.base.network.DisposableManager;
 
 /**
@@ -22,6 +23,9 @@ public class BaseApplication extends Application {
         mContext = getApplicationContext();//取得 context
 
         DisposableManager.instance();
+
+        // Display
+        DisplayUtils.instance(getApplicationContext());
     }
 
     public static Context getContext(){

@@ -10,6 +10,8 @@ import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Movie.Movie;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Radar.RadarBean;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.ServerBean;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Speak.Speak;
+import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Spell.Spell;
+import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Spell.SpellData;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Test_Record.TEST_Record;
 import com.wdtpr.augus.bjprofile.bjDemo.network.RetrofitHelper_bj;
 
@@ -271,6 +273,47 @@ public class LearnRecordModel extends BaseModel implements ILearnRecordModel {
                         if (responseCode == 200) {
                             GoldRecord bean = goldRecordResult.response().body();
                             learnRecordStateListener.GetGoldRecord(bean.getResult_content());
+                        } else {
+                            learnRecordStateListener.GETFail();
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable t) {
+                        disposableManager.clear();
+                        learnRecordStateListener.onUnknowError(t.getMessage());
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        learnRecordStateListener.onComplete();
+                    }
+                }));
+    }
+
+    @Override
+    public void GetSpell(final int StudentId) {
+        if (learnRecordStateListener == null) return;
+        learnRecordStateListener.onStart();
+        //
+        disposableManager.add(RetrofitHelper_bj.instance().create(API.class).GetServerToken("Melody", "Melody12345")
+                .flatMap(new Function<ServerBean, Publisher<Result<Spell>>>() {
+                    @Override
+                    public Publisher<Result<Spell>> apply(ServerBean serverBean) throws Exception {
+                        String token = serverBean.getResult_content();
+                        return RetrofitHelper_bj.instance().create(API.class).GetSpellTestRecord(token, StudentId);
+                    }
+                }).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(new ResourceSubscriber<Result<Spell>>() {
+                    @Override
+                    public void onNext(Result<Spell> spellResult) {
+
+                        //
+                        final int responseCode = spellResult.response().code();
+                        if (responseCode == 200) {
+                            Spell bean = spellResult.response().body();
+                            learnRecordStateListener.GetSpellSucess(bean.getResult_content());
                         } else {
                             learnRecordStateListener.GETFail();
                         }

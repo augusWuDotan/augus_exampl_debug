@@ -17,6 +17,16 @@ public class SpeakItem implements Serializable, IItemType {
     public static final int SPEAK_ITEM = R.layout.adapter_speak_form_item;
 
     /*
+     new
+                {
+                    "courseNo": "BJ01U3L3",
+                    "testRecordID": null,
+                    "testTime": null,
+                    "average": 0,
+                    "shareUrl": null,
+                    "canLotteryDraw": false
+                }
+      old
                  {
                      "APP_TestRecord_ID": null,
                      "TestTime": null,
@@ -27,58 +37,13 @@ public class SpeakItem implements Serializable, IItemType {
                      "status": "0" // 0: 還沒考 或是 還沒批改 ; 1: 已經批改還沒轉金幣 ; 2: 已經轉金幣
                  }
      */
-    private String APP_TestRecord_ID;
-    private String TestTime;
-    private int Gold;
-    private boolean GoldType;
+
     private String courseNo;
+    private int testRecordID;
+    private String testTime;
     private double average;
-    private String status;
-
-    @Override
-    public String toString() {
-        return "MovieItem{" +
-                "APP_TestRecord_ID='" + APP_TestRecord_ID + '\'' +
-                ", TestTime='" + TestTime + '\'' +
-                ", Gold=" + Gold +
-                ", GoldType=" + GoldType +
-                ", courseNo='" + courseNo + '\'' +
-                ", average=" + average +
-                ", status=" + status +
-                '}';
-    }
-
-    public String getAPP_TestRecord_ID() {
-        return APP_TestRecord_ID;
-    }
-
-    public void setAPP_TestRecord_ID(String APP_TestRecord_ID) {
-        this.APP_TestRecord_ID = APP_TestRecord_ID;
-    }
-
-    public String getTestTime() {
-        return TestTime;
-    }
-
-    public void setTestTime(String testTime) {
-        TestTime = testTime;
-    }
-
-    public int getGold() {
-        return Gold;
-    }
-
-    public void setGold(int gold) {
-        Gold = gold;
-    }
-
-    public boolean isGoldType() {
-        return GoldType;
-    }
-
-    public void setGoldType(boolean goldType) {
-        GoldType = goldType;
-    }
+    private String shareUrl;
+    private boolean canLotteryDraw;
 
     public String getCourseNo() {
         return courseNo;
@@ -86,6 +51,22 @@ public class SpeakItem implements Serializable, IItemType {
 
     public void setCourseNo(String courseNo) {
         this.courseNo = courseNo;
+    }
+
+    public int getTestRecordID() {
+        return testRecordID;
+    }
+
+    public void setTestRecordID(int testRecordID) {
+        this.testRecordID = testRecordID;
+    }
+
+    public String getTestTime() {
+        return testTime;
+    }
+
+    public void setTestTime(String testTime) {
+        this.testTime = testTime;
     }
 
     public double getAverage() {
@@ -96,12 +77,20 @@ public class SpeakItem implements Serializable, IItemType {
         this.average = average;
     }
 
-    public String getStatus() {
-        return status;
+    public String getShareUrl() {
+        return shareUrl;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setShareUrl(String shareUrl) {
+        this.shareUrl = shareUrl;
+    }
+
+    public boolean isCanLotteryDraw() {
+        return canLotteryDraw;
+    }
+
+    public void setCanLotteryDraw(boolean canLotteryDraw) {
+        this.canLotteryDraw = canLotteryDraw;
     }
 
     @Override

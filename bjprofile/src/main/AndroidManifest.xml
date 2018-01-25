@@ -1,2 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.wdtpr.augus.bjprofile" />
+    package="com.wdtpr.augus.bjprofile">
+
+    <application>
+        <activity android:name=".bjDemo.view.RadarActivity"></activity>
+    </application>
+
+</manifest>

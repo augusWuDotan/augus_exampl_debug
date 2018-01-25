@@ -12,6 +12,7 @@ import com.wdtpr.augus.bjprofile.bjDemo.view.IRSFragment;
 import com.wdtpr.augus.bjprofile.bjDemo.view.MovieFragment;
 import com.wdtpr.augus.bjprofile.bjDemo.view.RadarFragment;
 import com.wdtpr.augus.bjprofile.bjDemo.view.SpeakFragment;
+import com.wdtpr.augus.bjprofile.bjDemo.view.SpellFragment;
 import com.wdtpr.augus.bjprofile.bjDemo.view.TESTFragment;
 import com.wdtpr.augus.debugnetexample.R;
 
@@ -24,6 +25,7 @@ public class BjPagerActivity extends AppCompatActivity {
     private RadarFragment radarFragment;
     private SpeakFragment speakFragment;
     private GoldFragment goldFragment;
+    private SpellFragment spellFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +55,9 @@ public class BjPagerActivity extends AppCompatActivity {
                 break;
             case "GOLD":
                 Gold(transaction);
+                break;
+            case "SPELL":
+                Spell(transaction);
                 break;
         }
 
@@ -95,7 +100,7 @@ public class BjPagerActivity extends AppCompatActivity {
     //建立 Radar
     private void Radar(FragmentTransaction transaction) {
         if (radarFragment == null) {
-            radarFragment = RadarFragment.newInstance(19);
+            radarFragment = RadarFragment.newInstance(16361);
             transaction.add(R.id.contain, radarFragment, "Radar");
             transaction.commit();
         } else {
@@ -106,7 +111,7 @@ public class BjPagerActivity extends AppCompatActivity {
     //建立 Speak
     private void Speak(FragmentTransaction transaction) {
         if (speakFragment == null) {
-            speakFragment = SpeakFragment.newInstance(18);
+            speakFragment = SpeakFragment.newInstance(19);
             transaction.add(R.id.contain, speakFragment, "Speak");
             transaction.commit();
         } else {
@@ -117,11 +122,22 @@ public class BjPagerActivity extends AppCompatActivity {
     //建立 Gold
     private void Gold(FragmentTransaction transaction) {
         if (goldFragment == null) {
-            goldFragment = GoldFragment.newInstance(18);
+            goldFragment = GoldFragment.newInstance(16361);
             transaction.add(R.id.contain, goldFragment, "gold");
             transaction.commit();
         } else {
             transaction.show(goldFragment);
+        }
+    }
+
+    //建立 Spell
+    private void Spell(FragmentTransaction transaction) {
+        if (spellFragment == null) {
+            spellFragment = SpellFragment.newInstance(16361);
+            transaction.add(R.id.contain, spellFragment, "spell");
+            transaction.commit();
+        } else {
+            transaction.show(spellFragment);
         }
     }
 

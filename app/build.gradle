@@ -63,4 +63,5 @@ dependencies {
     //圖表
     implementation 'com.github.PhilJay:MPAndroidChart:v3.0.3'
     implementation project(':bjprofile')
+    implementation project(':ranking')
 }

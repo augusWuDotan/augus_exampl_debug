@@ -9,20 +9,26 @@ import java.io.Serializable;
  * Created by augus on 2017/12/28.
  */
 
-public class GoldRecordItem implements Serializable,IItemType {
+public class GoldRecordItem implements Serializable, IItemType {
     public static final int GOLDITEM = R.layout.adapter_gold_form_item;
     /*
         {
-            "APP_GoldRecord_Count": 2,
-            "APP_GoldRecord_Reason": "完成Exam取得",
-            "GoldType": false,
-            "APP_GoldRecord_Time": "2017-12-27T03:45:00"
+            "goldRecordCount": 6,
+            "goldRecordReason": "完成Spell\n金幣(3)*倍率(2)",
+            "isMonsterCoin": false,
+            "goldRecordTime": "2018-01-23\n02:49:00"
+        }
+        {
+            "goldRecordCount": 2,
+            "goldRecordReason": "完成Exam取得",
+            "isMonsterCoin": false,
+            "goldRecordTime": "2017-12-27T03:45:00"
         }
      */
-    private int APP_GoldRecord_Count;
-    private String APP_GoldRecord_Reason;
-    private boolean GoldType;
-    private String APP_GoldRecord_Time;
+    private int goldRecordCount;
+    private String goldRecordReason;
+    private boolean isMonsterCoin;
+    private String goldRecordTime;
 
     @Override
     public int itemType() {
@@ -32,42 +38,42 @@ public class GoldRecordItem implements Serializable,IItemType {
     @Override
     public String toString() {
         return "GoldRecordItem{" +
-                "APP_GoldRecord_Count=" + APP_GoldRecord_Count +
-                ", APP_GoldRecord_Reason='" + APP_GoldRecord_Reason + '\'' +
-                ", GoldType=" + GoldType +
-                ", APP_GoldRecord_Time='" + APP_GoldRecord_Time + '\'' +
+                "goldRecordCount=" + goldRecordCount +
+                ", goldRecordReason='" + goldRecordReason + '\'' +
+                ", isMonsterCoin=" + isMonsterCoin +
+                ", goldRecordTime='" + goldRecordTime + '\'' +
                 '}';
     }
 
-    public int getAPP_GoldRecord_Count() {
-        return APP_GoldRecord_Count;
+    public int getGoldRecordCount() {
+        return goldRecordCount;
     }
 
-    public void setAPP_GoldRecord_Count(int APP_GoldRecord_Count) {
-        this.APP_GoldRecord_Count = APP_GoldRecord_Count;
+    public void setGoldRecordCount(int goldRecordCount) {
+        this.goldRecordCount = goldRecordCount;
     }
 
-    public String getAPP_GoldRecord_Reason() {
-        return APP_GoldRecord_Reason;
+    public String getGoldRecordReason() {
+        return goldRecordReason;
     }
 
-    public void setAPP_GoldRecord_Reason(String APP_GoldRecord_Reason) {
-        this.APP_GoldRecord_Reason = APP_GoldRecord_Reason;
+    public void setGoldRecordReason(String goldRecordReason) {
+        this.goldRecordReason = goldRecordReason;
     }
 
-    public boolean isGoldType() {
-        return GoldType;
+    public boolean isMonsterCoin() {
+        return isMonsterCoin;
     }
 
-    public void setGoldType(boolean goldType) {
-        GoldType = goldType;
+    public void setMonsterCoin(boolean monsterCoin) {
+        isMonsterCoin = monsterCoin;
     }
 
-    public String getAPP_GoldRecord_Time() {
-        return APP_GoldRecord_Time;
+    public String getGoldRecordTime() {
+        return goldRecordTime;
     }
 
-    public void setAPP_GoldRecord_Time(String APP_GoldRecord_Time) {
-        this.APP_GoldRecord_Time = APP_GoldRecord_Time;
+    public void setGoldRecordTime(String goldRecordTime) {
+        this.goldRecordTime = goldRecordTime;
     }
 }

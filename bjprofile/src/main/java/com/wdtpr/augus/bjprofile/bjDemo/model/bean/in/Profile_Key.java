@@ -5,5 +5,5 @@ package com.wdtpr.augus.bjprofile.bjDemo.model.bean.in;
  */
 
 public enum Profile_Key {
-    IRS,MOVIE,TEST,SPEAK
+    IRS,MOVIE,TEST,SPEAK,SPELL
 }

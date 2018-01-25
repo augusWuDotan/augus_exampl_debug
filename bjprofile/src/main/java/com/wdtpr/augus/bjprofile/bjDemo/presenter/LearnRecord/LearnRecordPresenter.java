@@ -7,6 +7,7 @@ import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Irs_Record.IRS_RecordData;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Movie.MovieData;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Radar.RadarModelData;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Speak.SpeakData;
+import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Spell.SpellData;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Test_Record.TEST_RecordData;
 import com.wdtpr.augus.bjprofile.bjDemo.model.source.LearnRecord.ILearnRecordModel;
 import com.wdtpr.augus.bjprofile.bjDemo.model.source.LearnRecord.LearnRecordModel;
@@ -20,8 +21,8 @@ import java.util.List;
 public class LearnRecordPresenter extends BasePresenter implements ILearnRecordContract.Presnter {
 
 
-   private ILearnRecordContract.LearnRecordIRSStateView learnRecordIRSStateView;
-   private LearnRecordModel learnRecordModel;
+    private ILearnRecordContract.LearnRecordIRSStateView learnRecordIRSStateView;
+    private LearnRecordModel learnRecordModel;
 
     public LearnRecordPresenter(ILearnRecordContract.LearnRecordIRSStateView learnRecordIRSStateView) {
         this.learnRecordIRSStateView = learnRecordIRSStateView;
@@ -78,8 +79,12 @@ public class LearnRecordPresenter extends BasePresenter implements ILearnRecordC
         public void GetGoldRecord(List<GoldRecordItem> bean) {
             learnRecordIRSStateView.GetGoldRecord(bean);
         }
-    };
 
+        @Override
+        public void GetSpellSucess(List<SpellData> bean) {
+            learnRecordIRSStateView.GetSpellSucess(bean);
+        }
+    };
 
 
     @Override
@@ -91,17 +96,17 @@ public class LearnRecordPresenter extends BasePresenter implements ILearnRecordC
 
     @Override
     public void GETIRSList(int studentID, String courseNo) {
-    learnRecordModel.GETIRSList(studentID,courseNo);
+        learnRecordModel.GETIRSList(studentID, courseNo);
     }
 
     @Override
     public void GetMovieRecord(int studentID, String courseNo) {
-        learnRecordModel.GetMovieRecord(studentID,courseNo);
+        learnRecordModel.GetMovieRecord(studentID, courseNo);
     }
 
     @Override
     public void GetTestRecord(int studentID, String bookNo) {
-        learnRecordModel.GetTestRecord(studentID,bookNo);
+        learnRecordModel.GetTestRecord(studentID, bookNo);
     }
 
     @Override
@@ -117,5 +122,10 @@ public class LearnRecordPresenter extends BasePresenter implements ILearnRecordC
     @Override
     public void GetGoldRecord(int StudentId) {
         learnRecordModel.GetGoldRecord(StudentId);
+    }
+
+    @Override
+    public void GetSpellTestRecord(int StudentId) {
+        learnRecordModel.GetSpell(StudentId);
     }
 }

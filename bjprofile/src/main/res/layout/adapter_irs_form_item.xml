@@ -1,84 +1,111 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/ItemView"
+    android:id="@+id/cl"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="50dp"
+    android:orientation="vertical">
 
-    <LinearLayout
-        android:id="@+id/ll"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <TextView
-            android:id="@+id/tvItem"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:textColor="@android:color/black"
-            tools:text="U1L1" />
+    <TextView
+        android:id="@+id/tvItem"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:textColor="@android:color/black"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/vDotted1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="U1L1" />
 
     <View
         android:id="@+id/vDotted1"
         android:layout_width="3dp"
-        android:layout_height="50dp"
+        android:layout_height="0dp"
         android:background="@drawable/form_dotted_ver"
-        android:layerType="software" />
+        android:layerType="software"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/guideline3"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <LinearLayout
-            android:id="@+id/lvBarChartArea"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_weight="0.8"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:padding="3dp">
-
-            <ProgressBar
-                android:id="@+id/mPb"
-                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-                android:layout_width="match_parent"
-                android:layout_height="20dp"
-                android:max="100"
-                android:progress="0"
-                android:progressDrawable="@drawable/irs_progress_setting"
-                android:visibility="visible" />
-
-        </LinearLayout>
+    <ProgressBar
+        android:id="@+id/mPb"
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="5dp"
+        android:layout_marginStart="5dp"
+        android:max="100"
+        android:minHeight="20sp"
+        android:progress="0"
+        android:progressDrawable="@drawable/irs_progress_setting"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="@+id/guideline6"
+        app:layout_constraintEnd_toStartOf="@+id/vDotted2"
+        app:layout_constraintStart_toEndOf="@+id/vDotted1"
+        app:layout_constraintTop_toTopOf="@+id/guideline5" />
 
     <View
         android:id="@+id/vDotted2"
         android:layout_width="3dp"
-        android:layout_height="50dp"
+        android:layout_height="0dp"
         android:background="@drawable/form_dotted_ver"
-        android:layerType="software" />
+        android:layerType="software"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline4"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <LinearLayout
-            android:id="@+id/lvStatusArea"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="horizontal">
+    <ImageView
+        android:id="@+id/ivStatusIcon"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:padding="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/vDotted2"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/irs_gray" />
 
-            <ImageView
-                android:id="@+id/ivStatusIcon"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="5dp"
-                app:srcCompat="@drawable/irs_gray" />
-
-        </LinearLayout>
-
-    </LinearLayout>
     <View
         android:id="@+id/vDotted"
         android:layout_width="match_parent"
         android:layout_height="3dp"
-        android:layout_alignBottom="@+id/ll"
         android:background="@drawable/form_dotted"
-        android:layerType="software" />
-</RelativeLayout>
+        android:layerType="software"
+        app:layout_constraintBottom_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.28" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.72" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.30" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.70"/>
+
+
+</android.support.constraint.ConstraintLayout>

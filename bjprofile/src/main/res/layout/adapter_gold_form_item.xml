@@ -1,108 +1,135 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/ItemView"
+    android:id="@+id/cl"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="50dp"
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/tvTime"
-        android:layout_width="120dp"
-        android:layout_height="50dp"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:gravity="center"
         android:textColor="@android:color/black"
-        android:textSize="12sp"
-        tools:text="U1L1" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/vDotted1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="1111111111111111" />
 
     <View
         android:id="@+id/vDotted1"
         android:layout_width="3dp"
-        android:layout_height="50dp"
-        android:layout_toEndOf="@+id/tvTime"
-        android:layout_toRightOf="@+id/tvTime"
+        android:layout_height="0dp"
         android:background="@drawable/form_dotted_ver"
-        android:layerType="software" />
+        android:layerType="software"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/guideline3"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <LinearLayout
-        android:id="@+id/lvBarChartArea"
-        android:layout_width="wrap_content"
-        android:layout_height="50dp"
-        android:layout_toEndOf="@+id/vDotted1"
-        android:layout_toLeftOf="@+id/vDotted2"
-        android:layout_toRightOf="@+id/vDotted1"
-        android:layout_toStartOf="@+id/vDotted2"
+    <TextView
+        android:id="@+id/tvReason"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
         android:gravity="center"
-        android:orientation="horizontal"
-        android:padding="3dp">
-
-        <TextView
-            android:id="@+id/tvReason"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:padding="2dp"
-            android:ellipsize="end"
-            android:maxLines="2"
-            android:textColor="@android:color/black"
-            android:textSize="14sp"
-            tools:text="U1L1" />
-
-    </LinearLayout>
+        android:maxLines="3"
+        android:textColor="@android:color/black"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/vDotted2"
+        app:layout_constraintStart_toEndOf="@+id/vDotted1"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="U1L1111111111111111" />
 
     <View
         android:id="@+id/vDotted2"
         android:layout_width="3dp"
-        android:layout_height="50dp"
-        android:layout_toLeftOf="@+id/lvStatusArea"
-        android:layout_toStartOf="@+id/lvStatusArea"
+        android:layout_height="0dp"
         android:background="@drawable/form_dotted_ver"
-        android:layerType="software" />
+        android:layerType="software"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline4"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <LinearLayout
-        android:id="@+id/lvStatusArea"
-        android:layout_width="100dp"
-        android:layout_height="50dp"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:gravity="center"
-        android:orientation="horizontal">
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/cl1"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/guideline4"
+        app:layout_constraintTop_toTopOf="parent">
+
 
         <ImageView
             android:id="@+id/ivCoinIcon"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="10dp"
+            android:adjustViewBounds="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/ivIcon"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/coin" />
 
         <ImageView
             android:id="@+id/ivIcon"
             android:layout_width="40px"
             android:layout_height="40px"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/tvNum"
+            app:layout_constraintStart_toEndOf="@+id/ivCoinIcon"
+            app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/record_x" />
 
         <TextView
             android:id="@+id/tvNum"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginLeft="5dp"
+            android:layout_height="wrap_content"
             android:gravity="center"
             android:textColor="@android:color/black"
+            android:textSize="12sp"
             android:textStyle="bold"
-            tools:text="100" />
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/ivIcon"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="100000" />
 
-    </LinearLayout>
+    </android.support.constraint.ConstraintLayout>
+
 
     <View
         android:id="@+id/vDotted"
         android:layout_width="match_parent"
         android:layout_height="3dp"
-        android:layout_alignBottom="@+id/tvTime"
         android:background="@drawable/form_dotted"
-        android:layerType="software" />
+        android:layerType="software"
+        app:layout_constraintBottom_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.28" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.65" />
 
 
-</RelativeLayout>
+</android.support.constraint.ConstraintLayout>

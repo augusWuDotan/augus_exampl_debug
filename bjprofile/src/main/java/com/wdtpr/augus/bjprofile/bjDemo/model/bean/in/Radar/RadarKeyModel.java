@@ -10,37 +10,53 @@ import java.util.List;
 
 public class RadarKeyModel implements Serializable {
     /*
-     {
+    {
                 "Key_Title": "所有学习范围",
                 "Color_Number": "#ff000077",
                 "label": [
                     {
-                        "Label_Name": "阅读",
-                        "Score": 91
-                    },
-                    {
-                        "Label_Name": "单词听力",
-                        "Score": 92
-                    },
-                    {
-                        "Label_Name": "单词认读",
-                        "Score": 95
-                    },
-                    {
                         "Label_Name": "句型听力",
-                        "Score": 95
+                        "Score": 87
                     },
                     {
                         "Label_Name": "语法",
-                        "Score": 92
+                        "Score": 90
+                    },
+                    {
+                        "Label_Name": "阅读",
+                        "Score": 78
+                    },
+                    {
+                        "Label_Name": "单词听力",
+                        "Score": 83
+                    },
+                    {
+                        "Label_Name": "单词认读",
+                        "Score": 89
                     },
                     {
                         "Label_Name": "拼字",
-                        "Score": 86
+                        "Score": 77
                     },
                     {
-                        "Label_Name": "语法句构",
-                        "Score": 100
+                        "Label_Name": "单词听力",
+                        "Score": 67
+                    },
+                    {
+                        "Label_Name": "单词认读",
+                        "Score": 42
+                    },
+                    {
+                        "Label_Name": "阅读",
+                        "Score": 22
+                    },
+                    {
+                        "Label_Name": "句型听力",
+                        "Score": 33
+                    },
+                    {
+                        "Label_Name": "文法",
+                        "Score": 42
                     }
                 ]
             }

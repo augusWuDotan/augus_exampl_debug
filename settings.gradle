@@ -1,2 +1,2 @@
-include ':app', ':bjprofile'
+include ':app', ':bjprofile', ':ranking'
 rootProject.name = 'test'

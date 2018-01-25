@@ -6,7 +6,7 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,19 +25,25 @@ import com.github.mikephil.charting.data.RadarDataSet;
 import com.github.mikephil.charting.data.RadarEntry;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.interfaces.datasets.IRadarDataSet;
+import com.github.mikephil.charting.utils.Utils;
 import com.wdtpr.augus.bjprofile.R;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.GoldRecord.GoldRecordItem;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Irs_Record.IRS_RecordData;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Movie.MovieData;
+import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Radar.RadarKeyModel;
+import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Radar.RadarLebel;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Radar.RadarModelData;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Speak.SpeakData;
+import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Spell.SpellData;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Test_Record.TEST_RecordData;
 import com.wdtpr.augus.bjprofile.bjDemo.model.pager.mPagerAdapter;
 import com.wdtpr.augus.bjprofile.bjDemo.presenter.LearnRecord.ILearnRecordContract;
 import com.wdtpr.augus.bjprofile.bjDemo.presenter.LearnRecord.LearnRecordPresenter;
+import com.wdtpr.augus.bjprofile.bjDemo.utils.ListUtils;
 import com.wdtpr.augus.bjprofile.bjDemo.utils.LogUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -52,13 +58,20 @@ public class RadarFragment extends Fragment implements ILearnRecordContract.Lear
     private int StudentID;
     private MaterialDialog ProgressDialog;
     private RadarChart mChart;
-    private TextView tvTitle;
-    //
-    private ViewPager mViewPager;
-    private mPagerAdapter mAdapter;
     private LearnRecordPresenter learnRecordPresenter;
-    String[] labels;
-    protected Typeface mTfLight;
+
+    protected Typeface mTfLight;//使用字型
+    private String lineColor = "#7e2401";//雷達圖 線 顏色
+    private int lineWidth = 2;//雷達圖 線 寬度
+    private int mChartAlpha = 255;//雷達圖 背景透明度
+    private float mChartLeftSpace = 10;//雷達圖 左邊距離
+    private float mChartTopSpace = 70;//雷達圖 上邊距離
+    private float mChartRightSpace = 10;//雷達圖 右邊距離
+    private float mChartBottomSpace = 70;//雷達圖 下邊距離
+    private float xAxisTextSize = 16;//Ｘ軸文字大小
+    private int startAnimTime = 1200;//起始展開動畫使用時間
+    private int yAxisMin;//從資料內挑出最小值
+    private int yAxisAverage;//從資料內計算差值平均
 
 
     public RadarFragment() {
@@ -100,11 +113,7 @@ public class RadarFragment extends Fragment implements ILearnRecordContract.Lear
 
     private void initView(View view) {
         //
-        tvTitle = (TextView) view.findViewById(R.id.tvTitle);
-        //
         mChart = (RadarChart) view.findViewById(R.id.radarChart);
-//        mChart.setBackgroundColor(Color.parseColor("#30ffffff"));//雷達圖底色 白色透明
-
         //read
         learnRecordPresenter = new LearnRecordPresenter(this);
         learnRecordPresenter.GetRadar(StudentID);
@@ -112,212 +121,138 @@ public class RadarFragment extends Fragment implements ILearnRecordContract.Lear
 
     //資料呈現設定
     private void setData(final RadarModelData bean) {
-
-//        // create a custom MarkerView (extend MarkerView) and specify the layout
-//        // to use for it
-//        MarkerView mv = new RadarMarkerView(getActivity(), R.layout.radar_markerview);
-//        mv.setChartView(mChart); // For bounds control
-//        mChart.setMarker(mv); // Set the marker to the chart
-//        tvTitle.setText(bean.getTitle());
-//
-//
-//        //data start
-//        ArrayList<IRadarDataSet> sets = new ArrayList<IRadarDataSet>();//總資料
-//        for(RadarKeyModel keyModel : bean.getKey()){
-//            //單元分類開始---
-//
-//            //取得並設定各項目分數
-//            ArrayList<RadarEntry> KeyModeEntries = new ArrayList<RadarEntry>();
-//            for(RadarLebel lebel : keyModel.getLabel()){
-//                KeyModeEntries.add(new RadarEntry((float) lebel.getScore()));
-//            }
-//            RadarDataSet set1 = new RadarDataSet(KeyModeEntries, keyModel.getKey_Title());
-//            set1.setColor(Color.BLUE);
-//            set1.setFillColor(Color.BLUE);
-//            set1.setDrawFilled(true);
-//            set1.setFillAlpha(180);
-//            set1.setLineWidth(2f);
-//            set1.setDrawHighlightCircleEnabled(true);
-//            set1.setDrawHighlightIndicators(false);
-//            set1.setDrawValues(true);
-//            //
-//            sets.add(set1);//集中資料
-//        }
-//        //建立 分數文字
-//        RadarData data = new RadarData(sets);
-//        data.setValueTextSize(8f);
-//        data.setDrawValues(false);//建制不顯示
-//        data.setValueTextColor(Color.WHITE);
-//        //
-//        mChart.setData(data);//設定
-//        mChart.invalidate();//刷新
-//        //data end
-//
-//        //一開始的動畫
-//        mChart.animateXY(
-//                1400, 1400,
-//                Easing.EasingOption.EaseInOutQuad,
-//                Easing.EasingOption.EaseInOutQuad);
-//
-//        labels = new String[bean.getKey().get(0).getLabel().size()];
-//        int i = 0;
-//        for(RadarLebel label : bean.getKey().get(0).getLabel()){
-//            labels[i] = label.getLabel_Name();
-//            i++;
-//        }
-//
-//        XAxis xAxis = mChart.getXAxis();
-//        xAxis.setTextSize(12f);
-//        xAxis.setGridColor(Color.GREEN);//
-//        xAxis.setYOffset(0f);
-//        xAxis.setXOffset(0f);
-//        xAxis.setValueFormatter(new IAxisValueFormatter() {
-//            @Override
-//            public String getFormattedValue(float value, AxisBase axis) {
-//                return labels[(int) value % labels.length];
-//            }
-//        });
-//        xAxis.setTextColor(Color.WHITE);
-//
-//        YAxis yAxis = mChart.getYAxis();
-//        yAxis.setLabelCount(5, false);
-//        yAxis.setTextSize(12f);
-//        yAxis.setAxisMinimum(0f);
-//        yAxis.setAxisMaximum(80f);
-//        yAxis.setTextColor(Color.WHITE);
-//        yAxis.setDrawLabels(false);
-//
-//        Legend l = mChart.getLegend();
-//        l.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
-//        l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
-//        l.setOrientation(Legend.LegendOrientation.HORIZONTAL);
-//        l.setDrawInside(true);
-//        l.setXEntrySpace(10f);
-//        l.setYEntrySpace(5f);
-//        l.setTextColor(Color.WHITE);
-
-//        mChart.setBackgroundColor(Color.rgb(60, 65, 82));
-        mChart.setBackgroundColor(Color.parseColor("#30ffffff"));//雷達圖底色
+        /**
+         * 設定基本參數
+         */
         mChart.setDrawWeb(true);//
+        mChart.getDescription().setEnabled(false);//備註不顯示
+        mChart.setWebColor(Color.parseColor(lineColor));//雷達圖 縱線 顏色
+        mChart.setWebColorInner(Color.parseColor(lineColor));//雷達圖 縱線 顏色
+        mChart.setWebAlpha(mChartAlpha);//縱線 橫線 透明度
+        mChart.setExtraOffsets(mChartLeftSpace, mChartTopSpace, mChartRightSpace, mChartBottomSpace);//上下左右 space
+//        mChart.setSkipWebLineCount(0);//要被跳過的網路格數 y軸 [不使用]
 
-        mChart.getDescription().setEnabled(false);//背著不可觸碰
-
-        mChart.setWebLineWidth(1f);//雷達圖 縱線 寬度
-        mChart.setWebColor(Color.LTGRAY);//雷達圖 縱線 顏色
-        mChart.setWebLineWidthInner(1f);//雷達圖 橫線 寬度
-        mChart.setWebColorInner(Color.LTGRAY);//雷達圖 橫線 顏色
-        mChart.setWebAlpha(100);//縱線 橫線 透明度
-//        mChart.setTouchEnabled(false);//禁止觸碰//沒辦法在旋轉
-
-
-        // create a custom MarkerView (extend MarkerView) and specify the layout
-        // to use for it
+        /**
+         * 點擊到座標點會顯示什麼[圖示、％數]
+         */
         MarkerView mv = new RadarMarkerView(getActivity(), R.layout.radar_markerview);
         mv.setChartView(mChart); // For bounds control
         mChart.setMarker(mv); // Set the marker to the chart
+        mChart.setMaxHighlightDistance(5);
 
-        //建置資料
-        setData();
+        /**
+         * 建立相關參數[雷達圖 (雷達圖所需資料配置)、(Y軸最小值)、]
+         */
+        if (bean == null) return;
+        if (ListUtils.isEmpty(bean.getKey())) return;
+        //預設空值
+        List<ArrayList<RadarEntry>> entriesList = new ArrayList<>();//儲存繪製雷達圖資料
+        List<Integer> ScoreSet = new ArrayList<>();//儲存雷達圖分數
+        /**
+         *確認有值 儲存相關參數
+         */
+        for (RadarKeyModel radar : bean.getKey()) {
+            ArrayList<RadarEntry> radarEntries = new ArrayList<>();
+            for (RadarLebel label : radar.getLabel()) {
+                radarEntries.add(new RadarEntry(label.getScore()));
+                ScoreSet.add(label.getScore());
+            }
+            LogUtils.d("radarEntries size :" + radarEntries.size());
+            entriesList.add(radarEntries);
+        }
+        LogUtils.d("entriesList size :" + entriesList.size());
+        LogUtils.d("ScoreSet :" + ScoreSet);
 
-        //一開始的動畫
+        /**
+         * 取得Y軸最小值、差值平均
+         */
+        yAxisMin = Collections.min(ScoreSet);
+        int max = Collections.max(ScoreSet);
+        yAxisAverage = (max-yAxisMin)/ScoreSet.size();
+        LogUtils.d("ScoreSet min value :" + yAxisMin);
+
+        /**
+         *
+         */
+        ArrayList<IRadarDataSet> sets = new ArrayList<IRadarDataSet>();
+        int index = 0;
+        for (ArrayList<RadarEntry> entries : entriesList) {
+            RadarDataSet set = new RadarDataSet(entries, bean.getKey().get(index).getKey_Title());
+            set.setColor(Color.TRANSPARENT);//線條顏色[線條不用顏色]
+            set.setFillColor(Color.parseColor(bean.getKey().get(index).getColor_Number()));//填滿顏色
+            set.setDrawFilled(true);//是否填滿
+            set.setFillAlpha(180);//設置透明度
+            set.setLineWidth(2f);//設置線的寬度
+            set.setDrawHighlightCircleEnabled(true);//未知
+            set.setDrawHighlightIndicators(false);//未知
+            set.setDrawValues(true);//是否顯示科度數值
+            sets.add(set);
+            index++;
+        }
+        /**
+         * 資料集中 建制畫面
+         */
+        RadarData data = new RadarData(sets);
+        data.setValueTypeface(mTfLight);//設置字型
+        data.setValueTextSize(8f);//設置字體大小
+        data.setDrawValues(false);//是否顯示資料上的數值
+//        data.setValueTextColor(Color.WHITE);//設置字體顏色
+        mChart.setData(data);
+        mChart.invalidate();
+
+        /**
+         * 動畫設置
+         */
         mChart.animateXY(
-                1400, 1400,
+                startAnimTime, startAnimTime,
                 Easing.EasingOption.EaseInOutQuad,
                 Easing.EasingOption.EaseInOutQuad);
 
 
+        /**
+         * 建立x軸相關資訊
+         * Utils.convertPixelsToDp(40)//內建方法
+         */
         XAxis xAxis = mChart.getXAxis();
-        xAxis.setTypeface(mTfLight);
-        xAxis.setTextSize(12f);
-        xAxis.setGridColor(Color.WHITE);//
-        xAxis.setYOffset(0f);
-        xAxis.setXOffset(0f);
+        xAxis.setTypeface(mTfLight);//文字字型
+        xAxis.setTextSize(xAxisTextSize);//文字大小
+//        xAxis.setLabelCount(5,true);//?
+//        xAxis.setYOffset(0f);//?
+//        xAxis.setXOffset(0f);//?
         xAxis.setValueFormatter(new IAxisValueFormatter() {
-
-            private String[] mActivities = new String[]{"阅读", "单词听力", "单词认读", "句型听力", "语法", "拼字", "语法句构"};
 
             @Override
             public String getFormattedValue(float value, AxisBase axis) {
-                return mActivities[(int) value % mActivities.length];
+                //取得相關的標題
+                return bean.getKey().get(0).getLabel().get((int) value % bean.getKey().get(0).getLabel().size()).getLabel_Name();
             }
         });
-        xAxis.setTextColor(Color.WHITE);
-        xAxis.setDrawLabels(false);//隱藏或是顯示 標題
+        xAxis.setTextColor(Color.parseColor(lineColor));
+        xAxis.setEnabled(true);
+//        xAxis.setDrawLabels(false);//隱藏或是顯示 標題
 
+        /**
+         * 建立Y軸相關資訊
+         */
         YAxis yAxis = mChart.getYAxis();
-        yAxis.setTypeface(mTfLight);
-        yAxis.setLabelCount(5, true);
-        yAxis.setTextSize(12f);
-        yAxis.setAxisMinimum(0f);
-        yAxis.setAxisMaximum(80f);
-        yAxis.setTextColor(Color.WHITE);
+        yAxis.setTypeface(mTfLight);//文字字型
+        yAxis.setLabelCount(5,true);//?
+        yAxis.setTextSize(10f);//文字大小
+//        yAxis.setGranularity(8f);
+        yAxis.setAxisMinimum(yAxisMin-yAxisAverage);//最小值=數值最小值-[(數值最大值-數值最小值)/數值比對數量]
+//        yAxis.setAxisMinimum(0f);
+//        yAxis.setAxisMaximum(100f);//最大值
+        yAxis.setTextColor(Color.parseColor(lineColor));
         yAxis.setDrawLabels(false);
 
-
+        /**
+         * 預設下方標題
+         */
         Legend l = mChart.getLegend();
-        l.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
-        l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
-        l.setOrientation(Legend.LegendOrientation.HORIZONTAL);
+        l.setEnabled(false);
         l.setDrawInside(false); //
-        l.setTypeface(mTfLight);
-        l.setXEntrySpace(10f);// 分類 左右間距 [HORIZONTAL]
-        l.setYEntrySpace(10f);
-        l.setTextColor(Color.WHITE);
-
-        mChart.invalidate();
     }
 
-    public void setData() {
-
-        float mult = 80;
-        float min = 20;
-        int cnt = 7;//幾邊型
-
-        ArrayList<RadarEntry> entries1 = new ArrayList<RadarEntry>();
-        ArrayList<RadarEntry> entries2 = new ArrayList<RadarEntry>();
-
-        // NOTE: The order of the entries when being added to the entries array determines their position around the center of
-        // the chart.
-        for (int i = 0; i < cnt; i++) {
-            float val1 = (float) (Math.random() * mult) + min;
-            entries1.add(new RadarEntry(val1));//寫入數值
-            Log.d("TAG val1", String.valueOf(val1));
-            float val2 = (float) (Math.random() * mult) + min;
-            entries2.add(new RadarEntry(val2));
-            Log.d("TAG val2", String.valueOf(val2));
-        }
-
-        RadarDataSet set1 = new RadarDataSet(entries1, "第一單元");
-        set1.setColor(Color.BLUE);
-        set1.setFillColor(Color.BLUE);
-        set1.setDrawFilled(true);
-        set1.setFillAlpha(180);
-        set1.setLineWidth(2f);
-        set1.setDrawHighlightCircleEnabled(true);
-        set1.setDrawHighlightIndicators(false);
-
-        RadarDataSet set2 = new RadarDataSet(entries2, "第二單元");
-        set2.setColor(Color.YELLOW);//線
-        set2.setFillColor(Color.YELLOW);//填滿色
-        set2.setDrawFilled(true);//是否設置填滿色澤
-        set2.setFillAlpha(180);//設置填滿色澤的透明度 0 ~ 255
-        set2.setLineWidth(1f);//繪製框線的寬度
-        set2.setDrawHighlightCircleEnabled(true);//
-        set2.setDrawHighlightIndicators(false);//
-        set2.setDrawValues(true);//顯示科度數值
-
-        ArrayList<IRadarDataSet> sets = new ArrayList<IRadarDataSet>();
-        sets.add(set1);
-        sets.add(set2);
-
-        RadarData data = new RadarData(sets);
-        data.setValueTextSize(8f);
-        data.setDrawValues(false);
-        data.setValueTextColor(Color.WHITE);
-
-        mChart.setData(data);
-        mChart.invalidate();
-    }
 
     @Override
     public void showLoading() {
@@ -383,6 +318,12 @@ public class RadarFragment extends Fragment implements ILearnRecordContract.Lear
     public void GetGoldRecord(List<GoldRecordItem> bean) {
         //null
     }
+
+    @Override
+    public void GetSpellSucess(List<SpellData> bean) {
+        //null
+    }
+
 
     @Override
     public void onDestroyView() {

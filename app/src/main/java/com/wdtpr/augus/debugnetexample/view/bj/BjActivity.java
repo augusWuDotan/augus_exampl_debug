@@ -10,10 +10,13 @@ import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Irs_Record.IRS_RecordData;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Movie.MovieData;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Radar.RadarModelData;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Speak.SpeakData;
+import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Spell.SpellData;
 import com.wdtpr.augus.bjprofile.bjDemo.model.bean.in.Test_Record.TEST_RecordData;
 import com.wdtpr.augus.bjprofile.bjDemo.presenter.LearnRecord.ILearnRecordContract;
 import com.wdtpr.augus.bjprofile.bjDemo.presenter.LearnRecord.LearnRecordPresenter;
+import com.wdtpr.augus.bjprofile.bjDemo.view.RadarActivity;
 import com.wdtpr.augus.debugnetexample.R;
+import com.wdtpr.augus.debugnetexample.base.Utils.DisplayUtils;
 import com.wdtpr.augus.debugnetexample.base.Utils.LogUtils;
 
 import java.util.List;
@@ -29,6 +32,7 @@ public class BjActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bj_main);
+        DisplayUtils.instance(getApplicationContext());
 
 //
 
@@ -85,9 +89,14 @@ public class BjActivity extends AppCompatActivity {
                 //null
                 LogUtils.d(bean.toString());
             }
+
+            @Override
+            public void GetSpellSucess(List<SpellData> bean) {
+                LogUtils.d(bean.toString());
+            }
         });
 
-//        learnRecordPresenter.GetGoldRecord(18);
+        learnRecordPresenter.GetSpellTestRecord(16361);
     }
 
     public void IRS(View view) {
@@ -104,6 +113,7 @@ public class BjActivity extends AppCompatActivity {
 
     public void RADAR(View view) {
         startActivity(new Intent(this, BjPagerActivity.class).putExtra("TYPE", "RADAR"));
+//        startActivity(new Intent(this, RadarActivity.class));
     }
 
     public void SPEAK(View view) {
@@ -112,6 +122,10 @@ public class BjActivity extends AppCompatActivity {
 
     public void GOLD(View view) {
         startActivity(new Intent(this, BjPagerActivity.class).putExtra("TYPE", "GOLD"));
+    }
+
+    public void SPELL(View view) {
+        startActivity(new Intent(this, BjPagerActivity.class).putExtra("TYPE", "SPELL"));
     }
 
 
