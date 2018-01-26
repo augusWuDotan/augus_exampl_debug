@@ -1,0 +1,150 @@
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <ImageView
+        android:id="@+id/ivClass"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:src="@drawable/rank_title_class_select"
+        app:layout_constraintBottom_toTopOf="@id/guideline_tabA"
+        app:layout_constraintEnd_toStartOf="@+id/ivSchool"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@id/guideline_allL"
+        app:layout_constraintTop_toTopOf="@id/guideline_allT" />
+
+    <ImageView
+        android:id="@+id/ivSchool"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:src="@drawable/rank_title_school_normal"
+        app:layout_constraintBottom_toTopOf="@id/guideline_tabA"
+        app:layout_constraintEnd_toStartOf="@+id/ivNational"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/ivClass"
+        app:layout_constraintTop_toTopOf="@id/guideline_allT" />
+
+    <ImageView
+        android:id="@+id/ivNational"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:src="@drawable/rank_title_national_normal"
+        app:layout_constraintBottom_toTopOf="@id/guideline_tabA"
+        app:layout_constraintEnd_toEndOf="@id/guideline_allR"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/ivSchool"
+        app:layout_constraintTop_toTopOf="@id/guideline_allT" />
+
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/ivbg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/rank_bg"
+        app:layout_constraintBottom_toBottomOf="@+id/guideline_allB"
+        app:layout_constraintEnd_toEndOf="@+id/guideline_allR"
+        app:layout_constraintStart_toStartOf="@+id/guideline_allL"
+        app:layout_constraintTop_toTopOf="@id/guideline_bg" />
+
+    <com.wdtpr.augus.ranking.widget.ASEditText
+        android:id="@+id/etSearch"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="3dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="3dp"
+        android:imeOptions="actionSearch"
+        android:inputType="text"
+        android:maxLines="1"
+        android:textColor="#ffffff"
+        android:background="@drawable/common_search_edit_bg_corner5dp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline_framelayout"
+        app:layout_constraintEnd_toEndOf="@id/guideline_allR"
+        app:layout_constraintStart_toStartOf="@id/guideline_allL"
+        app:layout_constraintTop_toBottomOf="@+id/guideline_tabA" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/mRecyView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="3dp"
+        android:overScrollMode="never"
+        app:layout_constraintBottom_toBottomOf="@id/guideline_allB"
+        app:layout_constraintEnd_toEndOf="@id/guideline_allR"
+        app:layout_constraintStart_toStartOf="@id/guideline_allL"
+        app:layout_constraintTop_toTopOf="@id/guideline_framelayout" />
+
+
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_tab12"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.4" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_tab23"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.7" />
+
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_tabA"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.1" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_bg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.085" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_framelayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.16" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_allL"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.05" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_allR"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.95" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_allT"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.02" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline_allB"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.98" />
+
+
+</android.support.constraint.ConstraintLayout>

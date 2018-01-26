@@ -96,7 +96,7 @@ public class BjActivity extends AppCompatActivity {
             }
         });
 
-        learnRecordPresenter.GetSpellTestRecord(16361);
+//        learnRecordPresenter.GetSpellTestRecord(16361);
     }
 
     public void IRS(View view) {
@@ -126,6 +126,10 @@ public class BjActivity extends AppCompatActivity {
 
     public void SPELL(View view) {
         startActivity(new Intent(this, BjPagerActivity.class).putExtra("TYPE", "SPELL"));
+    }
+
+    public void RANK(View view) {
+        startActivity(new Intent(this, BjPagerActivity.class).putExtra("TYPE", "RANK"));
     }
 
 

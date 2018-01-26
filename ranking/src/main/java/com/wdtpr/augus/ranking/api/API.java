@@ -3,6 +3,8 @@ package com.wdtpr.augus.ranking.api;
 
 import com.jakewharton.retrofit2.adapter.rxjava2.Result;
 import com.wdtpr.augus.ranking.model.bean.in.ServerBean;
+import com.wdtpr.augus.ranking.model.bean.in.ranking.Rank_all;
+import com.wdtpr.augus.ranking.model.bean.in.ranking.Rank_single;
 
 import io.reactivex.Flowable;
 import retrofit2.http.Field;
@@ -24,16 +26,16 @@ public interface API {
     Flowable<ServerBean> GetServerToken(@Field("server_account") String account, @Field("server_password") String password);
 
 
-    //irs
-    @FormUrlEncoded
-    @POST("api/LearnRecord/GetStudentRanking")
-    Flowable<Result<String>> GetStudentRanking(@Header("server_token") String server_token, @Field("Type") String Type, @Field("StudentID") int studentID);
-
-    //irs
+    //
     @FormUrlEncoded
     @POST("api/LearnRecord/GetSingleStudentRanking")
-    Flowable<Result<String>> GetSingleStudentRanking(@Header("server_token") String server_token, @Field("Type") String Type,
-                                                     @Field("StudentID") int studentID,@Field("PageNumber") int PageNumber);
+    Flowable<Result<Rank_single>> GetSingleStudentRanking(@Header("server_token") String server_token, @Field("Type") String Type, @Field("StudentID") int studentID);
+
+    //
+    @FormUrlEncoded
+    @POST("api/LearnRecord/GetStudentRanking")
+    Flowable<Result<Rank_all>> GetStudentRanking(@Header("server_token") String server_token, @Field("Type") String Type,
+                                                          @Field("StudentID") int studentID, @Field("PageNumber") int PageNumber);
 
 
 }

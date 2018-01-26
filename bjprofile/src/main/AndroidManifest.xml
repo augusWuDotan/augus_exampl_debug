@@ -3,7 +3,8 @@
     package="com.wdtpr.augus.bjprofile">
 
     <application>
-        <activity android:name=".bjDemo.view.RadarActivity"></activity>
+        <activity android:name=".bjDemo.view.RadarActivity"
+            android:windowSoftInputMode="adjustPan"></activity>
     </application>
 
 </manifest>

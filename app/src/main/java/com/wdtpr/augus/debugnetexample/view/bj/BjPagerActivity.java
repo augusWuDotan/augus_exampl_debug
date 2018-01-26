@@ -15,6 +15,7 @@ import com.wdtpr.augus.bjprofile.bjDemo.view.SpeakFragment;
 import com.wdtpr.augus.bjprofile.bjDemo.view.SpellFragment;
 import com.wdtpr.augus.bjprofile.bjDemo.view.TESTFragment;
 import com.wdtpr.augus.debugnetexample.R;
+import com.wdtpr.augus.ranking.view.RankManagerFragment;
 
 public class BjPagerActivity extends AppCompatActivity {
     //
@@ -26,6 +27,7 @@ public class BjPagerActivity extends AppCompatActivity {
     private SpeakFragment speakFragment;
     private GoldFragment goldFragment;
     private SpellFragment spellFragment;
+    private RankManagerFragment rankManagerFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +60,9 @@ public class BjPagerActivity extends AppCompatActivity {
                 break;
             case "SPELL":
                 Spell(transaction);
+                break;
+            case "RANK":
+                Rank(transaction);
                 break;
         }
 
@@ -138,6 +143,18 @@ public class BjPagerActivity extends AppCompatActivity {
             transaction.commit();
         } else {
             transaction.show(spellFragment);
+        }
+    }
+
+
+    //----------- ranking
+    private void Rank(FragmentTransaction transaction) {
+        if (rankManagerFragment == null) {
+            rankManagerFragment = RankManagerFragment.newInstance(16637);
+            transaction.add(R.id.contain, rankManagerFragment, "rank");
+            transaction.commit();
+        } else {
+            transaction.show(rankManagerFragment);
         }
     }
 

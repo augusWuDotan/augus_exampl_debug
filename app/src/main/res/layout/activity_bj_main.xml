@@ -77,6 +77,17 @@
         tools:ignore="OnClick" />
 
 
+    <Button
+        android:id="@+id/RANK"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/SPELL"
+        android:onClick="RANK"
+        android:text="RANK"
+        android:visibility="visible"
+        tools:ignore="OnClick" />
+
+
 
 
 </LinearLayout>

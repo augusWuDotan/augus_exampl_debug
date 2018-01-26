@@ -236,7 +236,7 @@ public class RadarFragment extends Fragment implements ILearnRecordContract.Lear
          */
         YAxis yAxis = mChart.getYAxis();
         yAxis.setTypeface(mTfLight);//文字字型
-        yAxis.setLabelCount(5,true);//?
+        yAxis.setLabelCount(6,true);//?
         yAxis.setTextSize(10f);//文字大小
 //        yAxis.setGranularity(8f);
         yAxis.setAxisMinimum(yAxisMin-yAxisAverage);//最小值=數值最小值-[(數值最大值-數值最小值)/數值比對數量]
@@ -250,7 +250,7 @@ public class RadarFragment extends Fragment implements ILearnRecordContract.Lear
          */
         Legend l = mChart.getLegend();
         l.setEnabled(false);
-        l.setDrawInside(false); //
+        l.setDrawInside(true); //
     }
 
 
